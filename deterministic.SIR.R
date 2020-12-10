@@ -1,4 +1,4 @@
-####### Deterministic model
+####### Deterministic model, something dumb
 
 library(deSolve)
 
