@@ -159,3 +159,4 @@ lines(unlist(lapply(out11, function(y) y[[1]])), unlist(lapply(out11, function(y
 lines(unlist(lapply(out11, function(y) y[[1]])), unlist(lapply(out11, function(y) y[[4]])), col="green",
       type='l',lwd=1, xlab="Time", ylab="Number recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
+
