@@ -1,6 +1,5 @@
-## covariance in contacts and transmissibility as function of shedding (sigmoidal function)
+## covariance in contacts and gamma (sigmoidal)
 library(tidyverse)
-
 
 pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr){
   ## Generate Lognormal random variables with zeros. 
@@ -26,7 +25,7 @@ pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr){
 }
 
 
-gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1e5))) {
+gillespie.SIR.cov_cgamma <- function(tmax, params, corr, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   c = params["c"]
   shed = params["shed"]
@@ -34,7 +33,7 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
   alpha = params["alpha"]
   gamma = params["gamma"]
   sd_c=params["sd_c"]
-  sd_s=params["sd_s"]
+  sd_g=params["sd_g"]
   correlation=corr
   b = params["b"]
   bs = params["bs"]
@@ -45,30 +44,30 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  new_i <- pick_individuals_multivariate(I, traitmeans=c(c,shed), traitsds=c(sd_c,sd_s), corr=correlation) #infection
+  new_i <- pick_individuals_multivariate(I, traitmeans=c(c,gamma), traitsds=c(sd_c,sd_g), corr=correlation) #infection
   #print(new_i)
   c_i<-new_i[,1]
-  tau_i <- (new_i[,2]^2)/((h^2)+(new_i[,2]^2))
+  gamma_i <- new_i[,2]
   
   # start at time 0
   t <- 0 
   
   results <- vector(mode='list', length=100000)
-  results[[1]] <- list(t, S, c_i, tau_i, R)
+  results[[1]] <- list(t, S, c_i, gamma_i, R)
   
   ## row counter
   i <- 2
   
   #start algorithm
   while(t < tmax & length(c_i) >0 ){ 
-    irate = c_i*tau_i*S
-    rrate = gamma*(length(c_i))
+    irate = c_i*((shed^2)/(h^2+shed^2))*S
+    rrate = gamma_i*(length(c_i))
     brate <- (b - bs*(S+R+(length(c_i)))) * (S+R+(length(c_i)))
     drateS <-S*(d)
     drateI <-(d+alpha)*(length(c_i))
     drateR <- R*(d)
     
-    rates<-c(irate,drateI,rrate,brate,drateS,drateR)
+    rates<-c(irate,rrate,drateI,brate,drateS,drateR)
     #print(rates)
     ## what time does the event happen?
     dt <- rexp(1, rate=sum(rates))
@@ -87,34 +86,32 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(c_i)){### infection
       S <- S-1
-      infection <- pick_individuals_multivariate(1,traitmeans=c(c, shed), traitsds=c(sd_c, sd_s), corr=correlation)
+      infection <- pick_individuals_multivariate(1,traitmeans=c(c, gamma), traitsds=c(sd_c, sd_g), corr=correlation)
       c_i <- c(c_i, infection[,1]) # add to list of c i
-      tau_i <- c(tau_i, (infection[,2]^2)/((h^2)+(infection[,2]^2))) # add to list of tau i
+      gamma_i <- c(gamma_i, infection[,2]) # add to list of gamma i
     }
-    else if(event==((length(c_i)+1))){ # death of I
+    else if(event%in%((length(c_i)+1):(length(c_i)+length(gamma_i)))){ # recovery
+      R <- R+1
+      c_i <- c_i[-(event-length(gamma_i))]
+      gamma_i<- gamma_i[-(event-length(gamma_i))]
+    }
+    else if(event==(2*(length(c_i)))+1){ # death of I
       ind=sample(1:length(c_i),1)
       c_i<-c_i[-(ind)] 
-      tau_i<-tau_i[-(ind)]
+      gamma_i<-gamma_i[-(ind)]
     } 
     
-    else if(event==(length(c_i)+2)){ # recovery
-      R <- R+1
-      ind=sample(1:length(c_i),1)
-      c_i<-c_i[-(ind)] 
-      tau_i<-tau_i[-(ind)]
-    }
-    
-    else if (event==(length(c_i)+3)){ ### birth
+    else if (event==(2*(length(c_i)))+2){ ### birth
       S <- S+1
     }
-    else if (event==(length(c_i)+4)) { ### death of S
+    else if (event==(2*(length(c_i)))+3) { ### death of S
       S <- S-1
     }
     else    {   ### death of R
       R <- R-1
     }
     
-    results[[i]] <- list(t, S, c_i, tau_i , R)
+    results[[i]] <- list(t, S, c_i, gamma_i , R)
     i <- i +1
     
   }  
@@ -126,16 +123,11 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-all.new.params = c(c=.2, shed=.2, sd_c=.01, sd_s=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+all.new.params2 = c(c=.2, shed=.2, sd_c=.01, sd_g=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
 corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
 
-new_out <- gillespie.SIR.cov_csig(tmax, all.new.params, corr, x)
-length(out17)
-
-lapply(new_out, function(l) l[[2]])%>%unlist%>%plot
-
-lapply(new_out, function(l) length(l[[3]]))%>%unlist%>%plot
+new_out <- gillespie.SIR.cov_cgamma(tmax, all.new.params2, corr, x)
 
 #### output
 plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",
@@ -147,5 +139,3 @@ lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, functi
 lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[5]])), col="green",
       type='l',lwd=1, xlab="Time", ylab="Number recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
-
-

@@ -1,4 +1,4 @@
-## covariance in contacts and disease mort
+## covariance in contacts and disease mort (sigmoidal function)
 library(tidyverse)
 
 
