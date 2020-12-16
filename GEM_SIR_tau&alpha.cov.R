@@ -119,6 +119,15 @@ gillespie.SIR.cov_taualpha <- function(tmax, params, corr, x, seed=floor(runif(1
   }  
   
   results <- results[1:(i-1)]
+  ## simplify what you're storing so R doesn't crash because the datafiles are too big
+  results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                         S=sapply(results, function(r) r[[2]]), 
+                         I=sapply(results, function(r) length(r[[3]])),
+                         R=sapply(results, function(r) r[[5]]))
+  ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+  results <- results[sapply(seq(0,tmax,0.1), function(t) min(which(results$time >= t))),]
+  ## these two steps reduce the size of 'results' ~1000-fold
+  
   return(results)
 }
 
@@ -141,3 +150,5 @@ lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, functi
 lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[5]])), col="green",
       type='l',lwd=1, xlab="Time", ylab="Number recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
+
+## Deterministic model
