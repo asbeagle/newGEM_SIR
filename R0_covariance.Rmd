@@ -1,0 +1,35 @@
+---
+title: "Effects of covariance on R0"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For our model, 
+$$ R_0 = \frac{c \frac{\lambda}{h + \lambda} S}{\alpha + \gamma + \mu}, $$
+where $c$ is the contact rate between susceptible and infected hosts, $\lambda$ is the shedding rate from infected hosts (which determines the probability of infection, given contact), $\alpha$ is the infection-induced mortality rate, $\gamma$ is the recovery rate, and $\mu$ is the natural background death rate.
+If we assume that there is (co)variance in (between) either $c$, $\lambda$, or $\alpha$, how does that change the expected value of $R_0$?
+
+In so doing, $R_0$ becomes a random variable, and we can estimate the moments of a random variable using a Taylor expansion. 
+In general, such an expansion looks like the following: 
+$$ E[f(x)] = E[f(\bar{x} + (x - \bar{x}))] \\
+E[f(x)] = E[f(\bar{x}) + f'(\bar{x})(x-\bar{x}) + \frac{1}{2}f''(\bar{x})(x-\bar{x})^2] \\
+E[f(x)] = f(\bar{x}) + f'(\bar{x})E[(x-\bar{x})] + \frac{f''(\bar{x})}{2}E[(x-\bar{x})^2]. $$
+However, $E[(x-\bar{x})] = 0$ and $E[(x-\bar{x})^2] = \sigma_x^2$ (the variance in $x$). 
+Thus, 
+$$ E[f(x)] = f(\bar{x}) + \frac{f''(\bar{x})}{2} \sigma_x^2$$
+So, for the case where $f = R_0$ and $x = c$, we have 
+$$E[R_0(c)] = R_0(\bar{c}) + \frac{R_0''(\bar{c})}{2}\sigma_c^2 = R_0(\bar{c}).$$ 
+This is because $R_0''(\bar{c}) = 0$ because $R_0$ is linear in $c$. 
+Biologically, this implies that variation in $c$ has no effect on the expected fitness of a pathogen. 
+
+For the case where $x = \lambda$, however, we get 
+$$E[R_0(c)] = R_0(\bar{\lambda}) + \frac{R_0''(\bar{\lambda})}{2}\sigma_\lambda^2 = R_0(\bar{\lambda}) - \frac{h}{\bar{\lambda}(h+\bar{\lambda})^2}R_0(\bar{\lambda})\sigma_\lambda^2.$$ 
+Biologically, this implies that variation in $\lambda$ *reduces* the expected fitness of a pathogen because pathogen strains with low shedding drag average pathogen fitness down more than strains with high shedding can increase it.
+
+For the case where $x = \alpha$, we get 
+$$E[R_0(c)] = R_0(\bar{\alpha}) + \frac{R_0''(\bar{\alpha})}{2}\sigma_\alpha^2 = R_0(\bar{\alpha}) + \frac{1}{(\bar{\alpha}+\gamma+\mu)^2}R_0(\bar{\alpha})\sigma_\alpha^2.$$ 
+Biologically, this implies that variation in $\alpha$ *increases* the expected fitness of a pathogen because pathogen strains with low virulence increase average pathogen fitness more than strains with high virulence decrease it.
+
