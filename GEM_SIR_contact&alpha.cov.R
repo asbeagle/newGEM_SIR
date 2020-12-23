@@ -65,7 +65,7 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     rrate = gamma*(length(c_i))
     brate <- (b - bs*(S+R+(length(c_i)))) * (S+R+(length(c_i)))
     drateS <-S*(d)
-    drateI <-(d+alpha_i)*(length(c_i))
+    drateI <- (d+alpha_i)
     drateR <- R*(d)
     
     rates<-c(irate,drateI,rrate,brate,drateS,drateR)
@@ -119,6 +119,14 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
   }  
   
   results <- results[1:(i-1)]
+  
+  ## grab only the results I'm actually interested in
+  sapply(seq(0, 150), function(t) which((lapply(results, function(r) r[[1]]) %>% unlist) >= t)[1]) -> indices
+  data.frame(time=lapply(indices, function(i) results[[i]][[1]]) %>% unlist,
+             S=lapply(indices, function(i) results[[i]][[2]]) %>% unlist,
+             I=lapply(indices, function(i) results[[i]][[3]] %>% length) %>% unlist,
+             R=lapply(indices, function(i) results[[i]][[5]]) %>% unlist) -> results
+  
   return(results)
 }
 
