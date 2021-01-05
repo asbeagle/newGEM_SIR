@@ -11,6 +11,8 @@ tmax <- 150
 
 params = c(c=.2, shed=.2, sd_s=.01, sd_a=.01, sd_c=.01, sd_g=.01, 
            h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+params2 = c(c=.2, shed=.2, sd_s=.2, sd_a=.2, sd_c=.2, sd_g=.2, 
+           h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
 nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
@@ -39,8 +41,8 @@ mclapply(seeds,
 
 ## negative covariance
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params, negcorr, x),
-         mc.cores=4) -> out_negcov_taualpha
+         function(s) gillespie.SIR.cov_taualpha(tmax, params2, negcorr, x),
+         mc.cores=4) -> out_negcov_taualpha2
 
 mclapply(seeds,
          function(s) gillespie.SIR.cov_taugamma(tmax, params, negcorr, x),
@@ -60,8 +62,8 @@ mclapply(seeds,
 
 ## positive cov
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params, poscorr, x),
-         mc.cores=4) -> out_poscov_taualpha
+         function(s) gillespie.SIR.cov_taualpha(tmax, params2, poscorr, x),
+         mc.cores=4) -> out_poscov_taualpha2
 
 mclapply(seeds,
          function(s) gillespie.SIR.cov_taugamma(tmax, params, poscorr, x),
@@ -157,13 +159,13 @@ for (j in 1:length(out_nocov_taugamma)) {
 storeMatrix.taugamma.I <- array(NA, dim=c(length(timeSeq),length(out_nocov_taugamma)))
 for (j in 1:length(out_nocov_taugamma)) {
   o <- out_nocov_taugamma[[j]]
-  storeMatrix.taugamma.I[,j] <- o[,3] # num susceptible
+  storeMatrix.taugamma.I[,j] <- o[,3] # num infected
 }
 
 storeMatrix.taugamma.R <- array(NA, dim=c(length(timeSeq),length(out_nocov_taugamma)))
 for (j in 1:length(out_nocov_taugamma)) {
   o <- out_nocov_taugamma[[j]]
-  storeMatrix.taugamma.R[,j] <- o[,4] # num susceptible
+  storeMatrix.taugamma.R[,j] <- o[,4] # num recovered
 }
 
 ## plot
@@ -411,26 +413,26 @@ lines(0:150, apply(storeMatrix.ctau.S, 1, mean), col="blue", lwd=1.75, type="l",
 lines(0:150, apply(storeMatrix.ctau.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
-######## neg covariance  plotzz
-timeSeq <- 0:150
-storeMatrix.taualpha.I2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
-for (j in 1:length(out_negcov_taualpha)) {
-  o <- out_negcov_taualpha[[j]]
+########### NEG COVARIANCE PLOTS #####################
+timeSeq <- 0:250
+storeMatrix.taualpha.I2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
+for (j in 1:length(out_negcov_taualpha2)) {
+  o <- out_negcov_taualpha2[[j]]
   storeMatrix.taualpha.I2[,j] <- o[,3] # num infected
 }
 
 ## susceptible
-storeMatrix.taualpha.S2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
-for (j in 1:length(out_negcov_taualpha)) {
-  o <- out_negcov_taualpha[[j]]
-  storeMatrix.taualpha.S2[,j] <- o[,2] # num susceptible
+storeMatrix.taualpha.S2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
+for (j in 1:length(out_negcov_taualpha2)) {
+  o <- out_negcov_taualpha2[[j]]
+  storeMatrix.taualpha.S2[,j] <- o[,2] # num infected
 }
 
 ## recovered
-storeMatrix.taualpha.R2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
-for (j in 1:length(out_negcov_taualpha)) {
-  o <- out_negcov_taualpha[[j]]
-  storeMatrix.taualpha.R2[,j] <- o[,4] # num susceptible
+storeMatrix.taualpha.R2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
+for (j in 1:length(out_negcov_taualpha2)) {
+  o <- out_negcov_taualpha2[[j]]
+  storeMatrix.taualpha.R2[,j] <- o[,4] # num recovered
 }
 
 # plot
@@ -474,9 +476,9 @@ lines(upperbnd.R2, lwd=1,lty=1,col="black")
 
 par(mfrow=c(1,1))
 ## mean values 
-plot(0:150, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Simulation means")
-lines(0:150, apply(storeMatrix.taualpha.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
-lines(0:150, apply(storeMatrix.taualpha.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
+plot(0:250, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Simulation means")
+lines(0:250, apply(storeMatrix.taualpha.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
+lines(0:250, apply(storeMatrix.taualpha.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
 #### tau gamma neg cov
@@ -489,13 +491,13 @@ for (j in 1:length(out_negcov_taugamma)) {
 storeMatrix.taugamma.I2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taugamma)))
 for (j in 1:length(out_negcov_taugamma)) {
   o <- out_negcov_taugamma[[j]]
-  storeMatrix.taugamma.I2[,j] <- o[,3] # num susceptible
+  storeMatrix.taugamma.I2[,j] <- o[,3] # num infected
 }
 
 storeMatrix.taugamma.R2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taugamma)))
 for (j in 1:length(out_negcov_taugamma)) {
   o <- out_negcov_taugamma[[j]]
-  storeMatrix.taugamma.R2[,j] <- o[,4] # num susceptible
+  storeMatrix.taugamma.R2[,j] <- o[,4] # num recovered
 }
 
 ## plot
@@ -744,24 +746,24 @@ legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
 ############## POSITIVE COVARIANCE PLOTZZ ######################################
 timeSeq <- 0:150
-storeMatrix.taualpha.I3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
-for (j in 1:length(out_poscov_taualpha)) {
-  o <- out_poscov_taualpha[[j]]
+storeMatrix.taualpha.I3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
+for (j in 1:length(out_poscov_taualpha2)) {
+  o <- out_poscov_taualpha2[[j]]
   storeMatrix.taualpha.I3[,j] <- o[,3] # num infected
 }
 
 ## susceptible
-storeMatrix.taualpha.S3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
-for (j in 1:length(out_poscov_taualpha)) {
-  o <- out_poscov_taualpha[[j]]
+storeMatrix.taualpha.S3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
+for (j in 1:length(out_poscov_taualpha2)) {
+  o <- out_poscov_taualpha2[[j]]
   storeMatrix.taualpha.S3[,j] <- o[,2] # num susceptible
 }
 
 ## recovered
-storeMatrix.taualpha.R3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
-for (j in 1:length(out_poscov_taualpha)) {
-  o <- out_poscov_taualpha[[j]]
-  storeMatrix.taualpha.R3[,j] <- o[,4] # num susceptible
+storeMatrix.taualpha.R3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
+for (j in 1:length(out_poscov_taualpha2)) {
+  o <- out_poscov_taualpha2[[j]]
+  storeMatrix.taualpha.R3[,j] <- o[,4] # num recovered
 }
 
 # plot
@@ -805,9 +807,9 @@ lines(upperbnd.R3, lwd=1,lty=1,col="black")
 
 par(mfrow=c(1,1))
 ## mean values 
-plot(0:150, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Pos cov")
-lines(0:150, apply(storeMatrix.taualpha.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
-lines(0:150, apply(storeMatrix.taualpha.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
+plot(0:150, apply(storeMatrix.taualpha.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Pos cov")
+lines(0:150, apply(storeMatrix.taualpha.S3, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
+lines(0:150, apply(storeMatrix.taualpha.R3, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
 #### tau gamma pos cov
@@ -820,13 +822,13 @@ for (j in 1:length(out_poscov_taugamma)) {
 storeMatrix.taugamma.I3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taugamma)))
 for (j in 1:length(out_poscov_taugamma)) {
   o <- out_poscov_taugamma[[j]]
-  storeMatrix.taugamma.I3[,j] <- o[,3] # num susceptible
+  storeMatrix.taugamma.I3[,j] <- o[,3] # num infected
 }
 
 storeMatrix.taugamma.R3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taugamma)))
 for (j in 1:length(out_poscov_taugamma)) {
   o <- out_poscov_taugamma[[j]]
-  storeMatrix.taugamma.R3[,j] <- o[,4] # num susceptible
+  storeMatrix.taugamma.R3[,j] <- o[,4] # num recovered
 }
 
 ## plot
@@ -936,12 +938,12 @@ lines(upperbnd.Rcg3, lwd=1,lty=1,col="black")
 
 par(mfrow=c(1,3))
 ## mean values no
-plot(0:150, apply(storeMatrix.cgamma.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Pos cov")
-lines(0:150, apply(storeMatrix.cgamma.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
-lines(0:150, apply(storeMatrix.cgamma.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
+plot(0:150, apply(storeMatrix.cgamma.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Pos cov")
+lines(0:150, apply(storeMatrix.cgamma.S3, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
+lines(0:150, apply(storeMatrix.cgamma.R3, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"), fill=c("blue","red","green"), cex=.5)
 
-### neg cov contact and alpha
+### pos cov contact and alpha
 
 storeMatrix.calpha.S3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_calpha)))
 for (j in 1:length(out_poscov_calpha)) {

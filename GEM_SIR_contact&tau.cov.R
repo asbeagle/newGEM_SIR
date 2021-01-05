@@ -26,7 +26,7 @@ pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr){
 }
 
 
-gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1e5))) {
+gillespie.SIR.cov_ctau <- function(tmax, params, corr, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   c = params["c"]
   shed = params["shed"]
@@ -48,7 +48,7 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
   new_i <- pick_individuals_multivariate(I, traitmeans=c(c,shed), traitsds=c(sd_c,sd_s), corr=correlation) #infection
   #print(new_i)
   c_i<-new_i[,1]
-  tau_i <- (new_i[,2]^2)/((h^2)+(new_i[,2]^2))
+  tau_i <- (new_i[,2])/((h)+(new_i[,2]))
   
   # start at time 0
   t <- 0 
@@ -114,23 +114,37 @@ gillespie.SIR.cov_csig <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
       R <- R-1
     }
     
-    results[[i]] <- list(t, S, c_i, tau_i , R)
+    results[[i]] <- list(t, S,tau_i, c_i , R)
     i <- i +1
     
-  }  
+  }
   
   results <- results[1:(i-1)]
+  ## simplify what you're storing so R doesn't crash because the datafiles are too big
+  results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                        S=sapply(results, function(r) r[[2]]), 
+                        I=sapply(results, function(r) length(r[[3]])),
+                        R=sapply(results, function(r) r[[5]]))
+  ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+  results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
+  ## these two steps reduce the size of 'results' ~1000-fold
+  
   return(results)
 }
 
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-all.new.params = c(c=.2, shed=.2, sd_c=.01, sd_s=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+all.new.params = c(c=.2, shed=.1, sd_c=.01, sd_s=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
 corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
 
-new_out <- gillespie.SIR.cov_csig(tmax, all.new.params, corr, x)
+new_out <- gillespie.SIR.cov_ctau(tmax, all.new.params, corr, x)
+
+plot.ts(new_out[,2], col="blue", ylim=c(-5, 200))
+lines(new_out[,3], col="red")
+lines(new_out[,4], col="green")
+
 length(out17)
 
 lapply(new_out, function(l) l[[2]])%>%unlist%>%plot

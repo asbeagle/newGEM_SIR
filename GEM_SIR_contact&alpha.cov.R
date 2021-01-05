@@ -61,11 +61,11 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
   
   #start algorithm
   while(t < tmax & length(c_i) >0 ){ 
-    irate = c_i*((shed^2)/(h^2+shed^2))*S
+    irate = c_i*((shed)/(h+shed))*S
     rrate = gamma*(length(c_i))
     brate <- (b - bs*(S+R+(length(c_i)))) * (S+R+(length(c_i)))
     drateS <-S*(d)
-    drateI <-(d+alpha_i)*(length(c_i))
+    drateI <-(d+alpha_i)
     drateR <- R*(d)
     
     rates<-c(irate,drateI,rrate,brate,drateS,drateR)
@@ -116,20 +116,34 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     results[[i]] <- list(t, S,c_i, alpha_i , R)
     i <- i +1
     
-  }  
-  
-  results <- results[1:(i-1)]
-  return(results)
-}
+  }
+    
+    results <- results[1:(i-1)]
+    ## simplify what you're storing so R doesn't crash because the datafiles are too big
+    results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                          S=sapply(results, function(r) r[[2]]), 
+                          I=sapply(results, function(r) length(r[[3]])),
+                          R=sapply(results, function(r) r[[5]]))
+    ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+    results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
+    ## these two steps reduce the size of 'results' ~1000-fold
+    
+    return(results)
+  }
 
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-all.new.params2 = c(c=.2, shed=.2, sd_c=.01, sd_a=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
-corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+all.new.params2 = c(c=.2, shed=.2, sd_c=.2, sd_a=.2, h=.1, alpha=.1, gamma=.3, b=2.5, d=.4, bs=.01)
+corr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 
 
 new_out <- gillespie.SIR.cov_calpha(tmax, all.new.params2, corr, x)
+
+plot.ts(new_out[,2], col="blue", ylim=c(-5, 150))
+lines(new_out[,3], col="red")
+lines(new_out[,4], col="green")
+
 
 #### output
 plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",

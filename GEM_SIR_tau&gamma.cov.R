@@ -23,6 +23,7 @@ pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr){
   }      
   return(X);
 }
+
 gillespie.SIR.cov_taugamma <- function(tmax, params, corr, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   c = params["c"]
@@ -44,7 +45,7 @@ gillespie.SIR.cov_taugamma <- function(tmax, params, corr, x, seed=floor(runif(1
   ## draw the traits of our infected individuals
   new_i <- pick_individuals_multivariate(I, traitmeans=c(shed,gamma), traitsds=c(sd_s,sd_g), corr=correlation) #infection
   #print(new_i)
-  tau_i<-(new_i[,1]^2)/((h^2)+(new_i[,1]^2))
+  tau_i<-(new_i[,1])/((h)+(new_i[,1]))
   gamma_i <- new_i[,2]
   
   # start at time 0
@@ -59,7 +60,7 @@ gillespie.SIR.cov_taugamma <- function(tmax, params, corr, x, seed=floor(runif(1
   #start algorithm
   while(t < tmax & length(tau_i) >0 ){ 
     irate = c*tau_i*S
-    rrate = gamma_i*(length(tau_i))
+    rrate = gamma_i
     brate <- (b - bs*(S+R+(length(tau_i)))) * (S+R+(length(tau_i)))
     drateS <-S*(d)
     drateI <-(d+alpha)*(length(tau_i))
@@ -113,8 +114,16 @@ gillespie.SIR.cov_taugamma <- function(tmax, params, corr, x, seed=floor(runif(1
     i <- i +1
     
   }  
-  
   results <- results[1:(i-1)]
+  ## simplify what you're storing so R doesn't crash because the datafiles are too big
+  results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                        S=sapply(results, function(r) r[[2]]), 
+                        I=sapply(results, function(r) length(r[[3]])),
+                        R=sapply(results, function(r) r[[5]]))
+  ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+  results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
+  ## these two steps reduce the size of 'results' ~1000-fold
+
   return(results)
 }
 
@@ -126,6 +135,10 @@ corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
 
 new_out <- gillespie.SIR.cov_taugamma(tmax, all.new.params2, corr, x)
+
+plot.ts(new_out[,2], col="blue", ylim=c(-5, 150))
+lines(new_out[,3], col="red")
+lines(new_out[,4], col="green")
 
 #### output
 plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",

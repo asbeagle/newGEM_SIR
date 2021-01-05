@@ -47,7 +47,7 @@ gillespie.SIR.cov_taualpha <- function(tmax, params, corr, x, seed=floor(runif(1
   ## draw the traits of our infected individuals
   new_i <- pick_individuals_multivariate(I, traitmeans=c(shed,alpha), traitsds=c(sd_s,sd_a), corr=correlation) #infection
   #print(new_i)
-  tau_i<- (new_i[,1]^2)/((h^2)+(new_i[,1]^2))
+  tau_i<- (new_i[,1])/((h)+(new_i[,1]))
   alpha_i <- new_i[,2]
   
   # start at time 0
@@ -65,7 +65,7 @@ gillespie.SIR.cov_taualpha <- function(tmax, params, corr, x, seed=floor(runif(1
     rrate = gamma*(length(tau_i))
     brate <- (b - bs*(S+R+(length(tau_i)))) * (S+R+(length(tau_i)))
     drateS <-S*(d)
-    drateI <-(d+alpha_i)*(length(tau_i))
+    drateI <-(d+alpha_i)
     drateR <- R*(d)
     
     rates<-c(irate,drateI,rrate,brate,drateS,drateR)
@@ -125,20 +125,24 @@ gillespie.SIR.cov_taualpha <- function(tmax, params, corr, x, seed=floor(runif(1
                          I=sapply(results, function(r) length(r[[3]])),
                          R=sapply(results, function(r) r[[5]]))
   ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
-  results <- results[sapply(seq(0,tmax,0.1), function(t) min(which(results$time >= t))),]
+  results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
   ## these two steps reduce the size of 'results' ~1000-fold
   
   return(results)
 }
 
 x = c(S=70, I=10, R=0)
-tmax <- 150
+tmax <- 250
 
-all.new.params2 = c(c=.2, shed=.2, sd_s=.01, sd_a=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+all.new.params2 = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, h=.1, alpha=.1, gamma=.3, b=2.5, d=.4, bs=.01)
 corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
 
 new_out <- gillespie.SIR.cov_taualpha(tmax, all.new.params2, corr, x)
+
+plot.ts(new_out[,2], col="blue", ylim=c(-5, 150))
+lines(new_out[,3], col="red")
+lines(new_out[,4], col="green")
 
 #### output
 plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",
@@ -151,4 +155,4 @@ lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, functi
       type='l',lwd=1, xlab="Time", ylab="Number recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
 
-## Deterministic model
+
