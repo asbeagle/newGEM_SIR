@@ -26,16 +26,19 @@ deterministic.SIR=function(t,x,params){
 }
 
 # parameter values
-param <-c(beta=.1, alpha=.01, gamma = .3, b=2, d=0.4, bs=0.01, ds=0.1)
+param <-c(beta=.1, alpha=.01, gamma = .3, b=2.5, d=0.4, bs=0.01, ds=0.1)
+params = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, sd_c=.01, sd_g=.01, 
+           h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
 times = seq(0,100,by=1) # time steps to output 
 xstart = c(70,10,0) # beginning population size
 
-out=lsoda(xstart,times, deterministic.SIR, params)
+out=lsoda(xstart,times, deterministic.SIR, params2)
 
 S=out[,2]
 I=out[,3]
 R=out[,4]
 
+par(mfrow=c(1,1))
 plot.ts(S, col="blue", ylim=c(0,200), ylab="N", xlab="Time")
 lines(I, col="red")
 lines(R, col="green")
