@@ -11,8 +11,9 @@ tmax <- 150
 
 params = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, sd_c=.01, sd_g=.01, 
            h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
-params2 = c(c=.2, shed=.2, sd_s=.2, sd_a=.2, sd_c=.2, sd_g=.2, 
+params2 = c(c=.2, shed=.2, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
             h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+
 nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
@@ -20,65 +21,65 @@ poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 #  model simulations
 ## no covariance
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params, nocorr, x),
+         function(s) gillespie.SIR.cov_taualpha(tmax, params2, nocorr, x),
          mc.cores=4) -> out_nocov_taualpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params, nocorr, x),
+         function(s) gillespie.SIR.cov_taugamma(tmax, params2, nocorr, x),
          mc.cores=4) -> out_nocov_taugamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params, nocorr, x),
+         function(s) gillespie.SIR.cov_cgamma(tmax, params2, nocorr, x),
          mc.cores=4) -> out_nocov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params, nocorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, params2, nocorr, x),
          mc.cores=4) -> out_nocov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params, nocorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, params2, nocorr, x),
          mc.cores=4) -> out_nocov_ctau
 
 ## negative covariance
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params, negcorr, x),
+         function(s) gillespie.SIR.cov_taualpha(tmax, params2, negcorr, x),
          mc.cores=4) -> out_negcov_taualpha2
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params, negcorr, x),
+         function(s) gillespie.SIR.cov_taugamma(tmax, params2, negcorr, x),
          mc.cores=4) -> out_negcov_taugamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params, negcorr, x),
+         function(s) gillespie.SIR.cov_cgamma(tmax, params2, negcorr, x),
          mc.cores=4) -> out_negcov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params, negcorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, params2, negcorr, x),
          mc.cores=4) -> out_negcov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params, negcorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, params2, negcorr, x),
          mc.cores=4) -> out_negcov_ctau
 
 ## positive cov
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params, poscorr, x),
+         function(s) gillespie.SIR.cov_taualpha(tmax, params2, poscorr, x),
          mc.cores=4) -> out_poscov_taualpha2
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params, poscorr, x),
+         function(s) gillespie.SIR.cov_taugamma(tmax, params2, poscorr, x),
          mc.cores=4) -> out_poscov_taugamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params, poscorr, x),
+         function(s) gillespie.SIR.cov_cgamma(tmax, params2, poscorr, x),
          mc.cores=4) -> out_poscov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params, poscorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, params2, poscorr, x),
          mc.cores=4) -> out_poscov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params, poscorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, params2, poscorr, x),
          mc.cores=4) -> out_poscov_ctau
 
 ############################  TAU & ALPHA   #################################
@@ -152,19 +153,19 @@ par(mfrow=c(1,3))
 ## mean values 
 
 # NO COV
-plot(0:150, apply(storeMatrix.taualpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="No Cov")
+plot(0:150, apply(storeMatrix.taualpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Cov")
 lines(0:150, apply(storeMatrix.taualpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
 # NEG COV
-plot(0:150, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Neg Cov")
+plot(0:150, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Neg Cov")
 lines(0:150, apply(storeMatrix.taualpha.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
 
 # POS COV
-plot(0:150, apply(storeMatrix.taualpha.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Pos Cov")
+plot(0:150, apply(storeMatrix.taualpha.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Pos Cov")
 lines(0:150, apply(storeMatrix.taualpha.S3, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R3, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)

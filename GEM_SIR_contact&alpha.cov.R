@@ -65,7 +65,11 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     rrate = gamma*(length(c_i))
     brate <- (b - bs*(S+R+(length(c_i)))) * (S+R+(length(c_i)))
     drateS <-S*(d)
+<<<<<<< HEAD
     drateI <-(d+alpha_i)
+=======
+    drateI <- (d+alpha_i)
+>>>>>>> 8b24ccec37d7cbb760ea655300e2deaafe4faa9d
     drateR <- R*(d)
     
     rates<-c(irate,drateI,rrate,brate,drateS,drateR)
@@ -130,6 +134,7 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     
     return(results)
   }
+
 
 x = c(S=70, I=10, R=0)
 tmax <- 150
