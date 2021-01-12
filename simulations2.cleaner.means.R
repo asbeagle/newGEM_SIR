@@ -57,65 +57,65 @@ poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 #  model simulations
 ## no covariance
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params8, nocorr, x),
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, nocorr, x),
          mc.cores=4) -> out_nocov_taualpha
 
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params8, nocorr, x),
-         mc.cores=4) -> out_nocov_taugamma
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_taugamma(tmax, baselineparams, nocorr, x),
+         #mc.cores=4) -> out_nocov_taugamma
+
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_cgamma(tmax, baselineparams, nocorr, x),
+         #mc.cores=4) -> out_nocov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params8, nocorr, x),
-         mc.cores=4) -> out_nocov_cgamma
-
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params8, nocorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params2, nocorr, x),
          mc.cores=4) -> out_nocov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params8, nocorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, nocorr, x),
          mc.cores=4) -> out_nocov_ctau
 
 ## negative covariance
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params8, negcorr, x),
-         mc.cores=4) -> out_negcov_taualpha2
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, negcorr, x),
+         mc.cores=4) -> out_negcov_taualpha
+
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_taugamma(tmax, params8, negcorr, x),
+         #mc.cores=4) -> out_negcov_taugamma
+
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_cgamma(tmax, params8, negcorr, x),
+         #mc.cores=4) -> out_negcov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params8, negcorr, x),
-         mc.cores=4) -> out_negcov_taugamma
-
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params8, negcorr, x),
-         mc.cores=4) -> out_negcov_cgamma
-
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params8, negcorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params2, negcorr, x),
          mc.cores=4) -> out_negcov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params8, negcorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, negcorr, x),
          mc.cores=4) -> out_negcov_ctau
 
 ## positive cov
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taualpha(tmax, params8, poscorr, x),
-         mc.cores=4) -> out_poscov_taualpha2
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, poscorr, x),
+         mc.cores=4) -> out_poscov_taualpha
+
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_taugamma(tmax, params8, poscorr, x),
+         #mc.cores=4) -> out_poscov_taugamma
+
+#mclapply(seeds,
+         #function(s) gillespie.SIR.cov_cgamma(tmax, params8, poscorr, x),
+         #mc.cores=4) -> out_poscov_cgamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_taugamma(tmax, params8, poscorr, x),
-         mc.cores=4) -> out_poscov_taugamma
-
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_cgamma(tmax, params8, poscorr, x),
-         mc.cores=4) -> out_poscov_cgamma
-
-mclapply(seeds,
-         function(s) gillespie.SIR.cov_calpha(tmax, params8, poscorr, x),
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params2, poscorr, x),
          mc.cores=4) -> out_poscov_calpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.cov_ctau(tmax, params8, poscorr, x),
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, poscorr, x),
          mc.cores=4) -> out_poscov_ctau
 
 ############################  TAU & ALPHA   #################################
@@ -145,42 +145,42 @@ for (j in 1:length(out_nocov_taualpha)) {
 
 ############################ NEG COVARIATION #################################
 timeSeq <- 0:150
-storeMatrix.taualpha.S2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
-for (j in 1:length(out_negcov_taualpha2)) {
+storeMatrix.taualpha.S2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
+for (j in 1:length(out_negcov_taualpha)) {
   o <- out_negcov_taualpha2[[j]]
   storeMatrix.taualpha.S2[,j] <- o[,2] # num susceptible
 }
 
-storeMatrix.taualpha.I2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
-for (j in 1:length(out_negcov_taualpha2)) {
+storeMatrix.taualpha.I2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
+for (j in 1:length(out_negcov_taualpha)) {
   o <- out_negcov_taualpha2[[j]]
   storeMatrix.taualpha.I2[,j] <- o[,3] # num infected
 }
 
-storeMatrix.taualpha.R2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha2)))
-for (j in 1:length(out_negcov_taualpha2)) {
-  o <- out_negcov_taualpha2[[j]]
+storeMatrix.taualpha.R2 <- array(NA, dim=c(length(timeSeq),length(out_negcov_taualpha)))
+for (j in 1:length(out_negcov_taualpha)) {
+  o <- out_negcov_taualpha[[j]]
   storeMatrix.taualpha.R2[,j] <- o[,4] # num recovered
 }
 
 
 ############################ POS COVARIATION #################################
 timeSeq <- 0:150
-storeMatrix.taualpha.S3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
-for (j in 1:length(out_poscov_taualpha2)) {
-  o <- out_poscov_taualpha2[[j]]
+storeMatrix.taualpha.S3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
+for (j in 1:length(out_poscov_taualpha)) {
+  o <- out_poscov_taualpha[[j]]
   storeMatrix.taualpha.S3[,j] <- o[,2] # num susceptible
 }
 
-storeMatrix.taualpha.I3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
-for (j in 1:length(out_poscov_taualpha2)) {
-  o <- out_poscov_taualpha2[[j]]
+storeMatrix.taualpha.I3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
+for (j in 1:length(out_poscov_taualpha)) {
+  o <- out_poscov_taualpha[[j]]
   storeMatrix.taualpha.I3[,j] <- o[,3] # num infected
 }
 
-storeMatrix.taualpha.R3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha2)))
-for (j in 1:length(out_poscov_taualpha2)) {
-  o <- out_poscov_taualpha2[[j]]
+storeMatrix.taualpha.R3 <- array(NA, dim=c(length(timeSeq),length(out_poscov_taualpha)))
+for (j in 1:length(out_poscov_taualpha)) {
+  o <- out_poscov_taualpha[[j]]
   storeMatrix.taualpha.R3[,j] <- o[,4] # num recovered
 }
 
@@ -192,22 +192,22 @@ par(mfrow=c(1,4))
 plot(0:150, apply(storeMatrix.taualpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Cov")
 lines(0:150, apply(storeMatrix.taualpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # NEG COV
 plot(0:150, apply(storeMatrix.taualpha.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Neg Cov")
 lines(0:150, apply(storeMatrix.taualpha.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # POS COV
 plot(0:150, apply(storeMatrix.taualpha.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Pos Cov")
 lines(0:150, apply(storeMatrix.taualpha.S3, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.taualpha.R3, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.75)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.55)
 
 # DETERMINISTIC
-out=lsoda(xstart,times, deterministic.SIR, params8)
+out=lsoda(xstart,times, deterministic.SIR, tau.alpha.params2)
 
 S=out[,2]
 I=out[,3]
@@ -216,7 +216,7 @@ R=out[,4]
 plot.ts(S, col="blue", ylim=c(0,200), ylab="N", xlab="Time", main="Deterministic")
 lines(I, col="red")
 lines(R, col="green")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.7)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.5)
 
 
 ############################  TAU & GAMMA   #################################
@@ -472,10 +472,15 @@ lines(0:150, apply(storeMatrix.calpha.R3, 1, mean), col="green", lwd=1.75, type=
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # DETERMINISTIC
+out=lsoda(xstart,times, deterministic.SIR, contact.alpha.params2)
+S=out[,2]
+I=out[,3]
+R=out[,4]
+
 plot.ts(S, col="blue", ylim=c(0,200), ylab="N", xlab="Time", main="Deterministic")
 lines(I, col="red")
 lines(R, col="green")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.7)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.5)
 
 
 ############################   CONTACT & TAU    #################################
@@ -541,28 +546,33 @@ par(mfrow=c(1,4))
 ## mean values 
 
 # NO COV
-plot(0:150, apply(storeMatrix.ctau.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No cov")
+plot(0:150, apply(storeMatrix.ctau.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="N", xlab="Time", main="No cov")
 lines(0:150, apply(storeMatrix.ctau.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.ctau.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # NEG COV
-plot(0:150, apply(storeMatrix.ctau.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Neg cov")
+plot(0:150, apply(storeMatrix.ctau.I2, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="N", xlab="Time", main="Neg cov")
 lines(0:150, apply(storeMatrix.ctau.S2, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.ctau.R2, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # POS COV
-plot(0:150, apply(storeMatrix.ctau.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Pos cov")
+plot(0:150, apply(storeMatrix.ctau.I3, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="N", xlab="Time", main="Pos cov")
 lines(0:150, apply(storeMatrix.ctau.S3, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Susceptible")
 lines(0:150, apply(storeMatrix.ctau.R3, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time", main="Recovered")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 # DETERMINISTIC
-plot.ts(S, col="blue", ylim=c(0,200), ylab="N", xlab="Time")
+out=lsoda(xstart,times, deterministic.SIR, contact.tau.params2)
+S=out[,2]
+I=out[,3]
+R=out[,4]
+
+plot.ts(S, col="blue", ylim=c(0,250), ylab="N", xlab="Time", main="Deterministic")
 lines(I, col="red")
 lines(R, col="green")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.7)
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=.5)
 
 
 
