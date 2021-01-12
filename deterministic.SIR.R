@@ -29,10 +29,14 @@ deterministic.SIR=function(t,x,params){
 param <-c(beta=.1, alpha=.01, gamma = .3, b=2.5, d=0.4, bs=0.01, ds=0.1)
 params = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, sd_c=.01, sd_g=.01, 
            h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+params7 = c(c=.07, shed=.07, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
+            h=.13, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01)
+params6 = c(c=.05, shed=.05, sd_s=.05, sd_a=.1, sd_c=.05, sd_g=.15, 
+            h=.15, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01)
 times = seq(0,100,by=1) # time steps to output 
 xstart = c(70,10,0) # beginning population size
 
-out=lsoda(xstart,times, deterministic.SIR, params2)
+out=lsoda(xstart,times, deterministic.SIR, params6)
 
 S=out[,2]
 I=out[,3]
