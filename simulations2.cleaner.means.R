@@ -1,34 +1,54 @@
-## updated simulations
-c=.085
-shed=.089
-h=.13
-alpha=.13
+###### PREVIOUS PARAMS ######
+#params = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, sd_c=.01, sd_g=.01, 
+           #h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01) # R0 = 13
+#params2 = c(c=.2, shed=.2, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
+            #h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01) # R0 = 13
+#params3 = c(c=.4, shed=.4, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
+            #h=.2, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 28
+
+#params6 = c(c=.05, shed=.05, sd_s=.05, sd_a=.1, sd_c=.05, sd_g=.15, 
+            #h=.15, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 1.326 
+#params7 = c(c=.07, shed=.07, sd_s=.07, sd_a=.1, sd_c=.07, sd_g=.15, 
+            #h=.13, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 2.522
+#params8 = c(c=.085, shed=.089, sd_s=.089, sd_a=.13, sd_c=.085, sd_g=.15, 
+            #h=.13, alpha=.13, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 3.55
+
+## R0 CALCULATION
+c=.1
+shed=.05
+h=.15
+alpha=.15
 gamma=.15
-d=.4
+d=.2
 R0<- (((c*(shed/(shed+h)))*70)/(alpha+gamma+d))
 
 # packages
 library(tidyverse)
 library(parallel)
 
-# seeds and parameter values
+# seeds and current parameter values
 seeds <- floor(runif(20,1,1e5)) # set seeds
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-params = c(c=.2, shed=.2, sd_s=.1, sd_a=.1, sd_c=.01, sd_g=.01, 
-           h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01) # R0 = 13
-params2 = c(c=.2, shed=.2, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
-            h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01) # R0 = 13
-params3 = c(c=.4, shed=.4, sd_s=.25, sd_a=.25, sd_c=.25, sd_g=.25, 
-            h=.2, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 28
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
 
-params6 = c(c=.05, shed=.05, sd_s=.05, sd_a=.1, sd_c=.05, sd_g=.15, 
-            h=.15, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 1.326 
-params7 = c(c=.07, shed=.07, sd_s=.07, sd_a=.1, sd_c=.07, sd_g=.15, 
-            h=.13, alpha=.1, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 2.522
-params8 = c(c=.085, shed=.089, sd_s=.089, sd_a=.13, sd_c=.085, sd_g=.15, 
-            h=.13, alpha=.13, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 3.55
+contact.tau.params1 = c(c=.035, shed=.05, h=.15, alpha=.12, gamma=.05, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.12, sd_g=.05,b=2.5, bs=.01) # R0 = 2.55
+contact.tau.params2 = c(c=.035, shed=.05, h=.15, alpha=.1, gamma=.005, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.1, sd_g=.005,b=2.5, bs=.01) # R0 = 3.5
+
+contact.alpha.params1 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) # R0 = 2.566
+contact.alpha.params2 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) # R0 = 3.572
+
+tau.alpha.params1 = c(c=.074, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 2.59
+tau.alpha.params2 = c(c=.1, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 3.5
+
 
 nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
