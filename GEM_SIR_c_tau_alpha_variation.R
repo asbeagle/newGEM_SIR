@@ -12,7 +12,6 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   alpha = params["alpha"]
   gamma = params["gamma"]
   sd_c=params["sd_c"]
-  correlation=corr
   b = params["b"]
   bs = params["bs"]
   d = params["d"]
@@ -43,6 +42,7 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     drateR <- R*(d)
     
     rates<-c(irate,drateI,rrate,brate,drateS,drateR)
+    #print(rates)
     ## what time does the event happen?
     dt <- rexp(1, rate=sum(rates))
     
@@ -58,7 +58,7 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(c_i)){### infection
       S <- S-1
-      c_i <- c(c_i, pick_individuals(I, traitmean=c, traitsd=sd_c)) # add to list of c i
+      c_i <- c(c_i, pick_individuals(1, traitmean=c, traitsd=sd_c)) # add to list of c i
     }
     else if(event==((length(c_i)+1))){ # death of I
       ind=sample(1:length(c_i),1)
@@ -128,7 +128,7 @@ gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   i <- 2
   
   #start algorithm
-  while(t < tmax & length(c_i) >0 ){ 
+  while(t < tmax & length(tau_i) >0 ){ 
     irate = c*tau_i*S
     rrate = gamma*(length(tau_i))
     brate <- (b - bs*(S+R+(length(tau_i)))) * (S+R+(length(tau_i)))

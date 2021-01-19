@@ -764,8 +764,3 @@ summary(lm(n1[,2]~n1[,1]))
 summary(lm(n2[,2]~n2[,1]))
 
 ```
-One thing that might be worth checking is whether variation (not covariation) has any effect.
-This is most easily accomplished with a totally different function altogether.
-
-```{r}
-source("GEM_SIR_c_tau_alpha_variation.R")
