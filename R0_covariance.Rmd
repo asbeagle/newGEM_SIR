@@ -15,9 +15,8 @@ where $c$ is the contact rate between susceptible and infected hosts, $\lambda$ 
 If we assume that there is (co)variance in (between) either $c$, $\lambda$, or $\alpha$, how does that change the expected value of $R_0$?
 
 In so doing, $R_0$ becomes a random variable, and we can estimate the moments of a random variable using a Taylor expansion. 
-In general, such an expansion looks like the following: 
+In particular, using the Taylor expansion of the function $f(x)$ around the point $\bar{x}$, we can compute the expectation of $f(x)$ as:
 \begin{align*}
-E[f(x)] &= E[f(\bar{x} + (x - \bar{x}))] \\
 E[f(x)] &= E[f(\bar{x}) + f'(\bar{x})(x-\bar{x}) + \frac{1}{2}f''(\bar{x})(x-\bar{x})^2] \\
 E[f(x)] &= f(\bar{x}) + f'(\bar{x})E[(x-\bar{x})] + \frac{f''(\bar{x})}{2}E[(x-\bar{x})^2].
 \end{align*}
@@ -46,27 +45,25 @@ Biologically, this implies that variation in $\alpha$ *increases* the expected f
 To consider the effects of covariance among parameters, we use the multivariate Taylor expansion, 
 \begin{align*}
 E[f(x,y)] = &f(\bar{x},\bar{y}) + f_x(\bar{x},\bar{y})E[x-\bar{x}] + f_y(\bar{x},\bar{y})E[y-\bar{y}] \\
-& + \frac{1}{2}\left(f_{xx}(\bar{x},\bar{y})E[(x-\bar{x})^2] - 2f_{xy}(\bar{x},\bar{y})E[(x-\bar{x})(y-\bar{y})]+ f_{yy}(\bar{x},\bar{y})E[(y-\bar{y})^2]\right)
+& + \frac{1}{2}\left(f_{xx}(\bar{x},\bar{y})E[(x-\bar{x})^2] + 2f_{xy}(\bar{x},\bar{y})E[(x-\bar{x})(y-\bar{y})]+ f_{yy}(\bar{x},\bar{y})E[(y-\bar{y})^2]\right)
 \end{align*}
 
 As before, $E[x-\bar{x}] = 0$ and $E[y-\bar{y}] = 0$, $E[(x-\bar{x})^2] = \sigma_x^2$ (the variance in $x$) and $E[(y-\bar{y})^2] = \sigma_y^2$ (the variance in $y$), and $E[(x-\bar{x})(y-\bar{y})] = \text{cov}(x,y)$ Thus,
-$$ E[f(x,y)] = f(\bar{x},\bar{y}) + \frac{1}{2}\left(f_{xx}(\bar{x},\bar{y})\sigma_x^2 - 2f_{xy}(\bar{x},\bar{y})\text{cov}(x,y)+ f_{yy}(\bar{x},\bar{y})\sigma_y^2\right)$$
+$$ E[f(x,y)] = f(\bar{x},\bar{y}) + \frac{1}{2}\left(f_{xx}(\bar{x},\bar{y})\sigma_x^2 + 2f_{xy}(\bar{x},\bar{y})\text{cov}(x,y)+ f_{yy}(\bar{x},\bar{y})\sigma_y^2\right)$$
 If there is covariance between contact rate $c$ and shedding rate (infectiousness) $\lambda$ then the expected value of $R_0$ is
 \begin{align} 
-E[R_0(c,\lambda)] &= R_0\left(\bar{c},\bar{\lambda}\right) + \frac{1}{2}\left(-\frac{2h}{\bar{c}\bar{\lambda}(h+\bar{\lambda})}R_0\left(\bar{c},\bar{\lambda}\right)\text{cov}(c,\lambda) - \frac{2h}{\bar{\lambda}\left(h+\bar{\lambda}\right)^2}R_0\left(\bar{c},\bar{\lambda}\right)\sigma_\lambda^2\right) \\
-&= R_0\left(\bar{c},\bar{\lambda}\right)\left(1-\frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)}\left(\frac{\text{cov}(c,\lambda)}{\bar{c}} + \frac{\sigma_\lambda^2}{h+\bar{\lambda}}\right)\right).
+E[R_0(c,\lambda)] &= R_0\left(\bar{c},\bar{\lambda}\right) + \frac{1}{2}\left(\frac{2h}{\bar{c}\bar{\lambda}(h+\bar{\lambda})}R_0\left(\bar{c},\bar{\lambda}\right)\text{cov}(c,\lambda) - \frac{2h}{\bar{\lambda}\left(h+\bar{\lambda}\right)^2}R_0\left(\bar{c},\bar{\lambda}\right)\sigma_\lambda^2\right) \\
+&= R_0\left(\bar{c},\bar{\lambda}\right)\left(1+\frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)}\left(\frac{\text{cov}(c,\lambda)}{\bar{c}} - \frac{\sigma_\lambda^2}{h+\bar{\lambda}}\right)\right).
 \end{align}
 From this expression, the effect of covariance depends on its sign. 
-In particular, if contact rate and infectiousness positively covary (so that the individuals with the highest contact rate are also the most infectious), then the expected $R_0$ will be much lower than the value of $R_0$ evaluated at the mean $\bar{c}$ and $\bar{\lambda}$.
-In this case, covariation amplifies the negative effect of variation in shedding observed in equation (2) above.
-If, however, the two traits negatively covary, then it is possible that covariation can increase the expected $R_0$, as the negative covariation offsets the negative effect of variation in shedding.
+In particular, if contact rate and infectiousness positively covary (so that the individuals with the highest contact rate are also the most infectious), then covariation offsets the negative effect of variation in shedding observed in equation (2) above and it is possible that variation will increase the expected $R_0$.
+If, however, the two traits negatively covary, then covariation will greatly reduce the expected $R_0$, as the negative covariation amplifies the negative effect of variation in shedding.
 
 If there is covariation between contact rate $c$ and virulence $\alpha$, then the expected value of $R_0$ is
 \begin{align}
 E[R_0(c,\alpha)] &= R_0\left(\bar{c},\bar{\alpha}\right) + \frac{1}{2}\left(-\frac{2}{\bar{c}\left(\bar{\alpha}+\gamma+\mu\right)}R_0\left(\bar{c},\bar{\alpha}\right)\text{cov}(c,\alpha) + \frac{2}{\left(\bar{\alpha}+\gamma+\mu\right)^2}R_0\left(\bar{c},\bar{\alpha}\right)\sigma_\alpha^2\right) \\
 &= R_0\left(\bar{c},\bar{\alpha}\right)\left(1 + \frac{1}{\bar{\alpha}+\gamma+\mu}\left(\frac{\sigma_\alpha^2}{\bar{\alpha}+\gamma+\mu} - \frac{\text{cov}(c,\alpha)}{\bar{c}}\right)\right).
 \end{align}
- 
 From this expression, the effect of covariance between contact rate and virulence depends critically on its sign. 
 In particular, if contact rate and virulence negatively covary, so that the individuals with the highest contact rate have the lowest virulence (and thus the longest infectious period), then the expected $R_0$ will be much higher than the value at the $R_0$ evaluated at the mean $\bar{c}$ and $\bar{\alpha}$. 
 In this case, covariation amplifies the positive effect of variation in virulence observed in equation (3) above.
@@ -95,14 +92,10 @@ E[R_0(\alpha)] &= R_0\left(\bar{\alpha}\right)\left(1 + \frac{\sigma_\alpha^2}{\
 \end{align}
 and covariation:
 \begin{align}
-E[R_0(c,\lambda)] &= R_0\left(\bar{c},\bar{\lambda}\right)\left(1-\frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)}\left(\frac{\text{cov}(c,\lambda)}{\bar{c}} + \frac{\sigma_\lambda^2}{h+\bar{\lambda}}\right)\right),\\
+E[R_0(c,\lambda)] &= R_0\left(\bar{c},\bar{\lambda}\right)\left(1+\frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)}\left(\frac{\text{cov}(c,\lambda)}{\bar{c}} - \frac{\sigma_\lambda^2}{h+\bar{\lambda}}\right)\right),\\
 E[R_0(c,\alpha)] &= R_0\left(\bar{c},\bar{\alpha}\right)\left(1 + \frac{1}{\bar{\alpha}+\gamma+\mu}\left(\frac{\sigma_\alpha^2}{\bar{\alpha}+\gamma+\mu} - \frac{\text{cov}(c,\alpha)}{\bar{c}}\right)\right), \\
 E[R_0(\lambda,\alpha)] &= R_0\left(\bar{\lambda},\bar{\alpha}\right) \left(1 - \frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)^2}\sigma_\lambda^2 - \frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)\left(\bar{\alpha}+\gamma+\mu\right)}\text{cov}(\lambda,\alpha) + \frac{1}{\left(\bar{\alpha}+\gamma+\mu\right)^2}\sigma_\alpha^2\right).
 \end{align}
 
 From these analyses, it is clear that the worst-case scenario for disease management would be a case where there is considerable variation in virulence among individuals and where individuals with the highest contact rates have the lowest virulence. 
-This seems like a scenario that might arise fairly commonly in nature, if morbidity and mortality are positively correlated such that the sickest individuals have the lowest contact rates. 
-
-The best-case scenario would be a case where there is considerable variation in shedding and where individuals with the highest contact rates also have the highest shedding. 
-This scenario is counterintuitive, as it would seem like the situation where the most infectious individuals have the highest contact rate would lead to more infections.
-This result has to do with the fact that the probability of infection is a saturating function of shedding; Jensen's inequality applies here so that the mean infectiousness is lower than the infectiousness at the mean (individuals with shedding rates below the mean drag down the population-level mean infectiousness more than individuals with shedding rates above the mean can lift it up).
+The best-case scenario would be a case where there is considerable variation in shedding and where individuals with the highest shedding rates also have the lowest contact rates.

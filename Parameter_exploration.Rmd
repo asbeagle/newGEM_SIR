@@ -1,0 +1,707 @@
+---
+title: "Consequences of covariation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      dev=c('png','tiff'),
+                      fig.path='figures/')
+library(tidyverse)
+library(parallel)
+```
+
+Here I will consider the dynamical consequences of different choices of parameters in our epidemiological model where we explore covariation. 
+Note that this model is the following:
+\begin{align*}
+\frac{dS}{dt} &= (b - b_s N) N - \beta S I - d S \\
+\frac{dI}{dt} &= \beta S I - (d + \alpha + \gamma) I \\
+\frac{dR}{dt} &= \gamma I - d R \\
+N &= S + I + R \\
+\beta &= c \frac{s}{h + s}
+\end{align*}
+
+We consider the consequences of variation and covariation in the contact rate $c$, the shedding rate $s$, the virulence $\alpha$ and the recovery rate $\gamma$. 
+A couple of important quantities that we can calculate analytically include the population size when the disease is absent, $\hat{N_0} = \hat{S_0} = (b - d)/d_s$; the pathogen's net reproductive rate when invading a fully susceptible population,
+\begin{equation}
+R_0 = \frac{c \frac{s}{h+s} \hat{S_0}}{d + \alpha + \gamma};
+\end{equation}
+and the equilibrium size of the susceptible population at the endemic equilibrium, 
+\begin{equation}
+\hat{S_e} = \frac{d + \alpha + \gamma}{c \frac{s}{h+s}}.
+\end{equation}
+
+Thus, for any particular set of parameters, we can calculate each of these quantitites.
+The baseline set of parameters is 
+```{r}
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01)
+```
+At this baseline, the size of a fully susceptible population is $\hat{S_0}=$ `r (2.5-.2)/.01`, the baseline net reproductive rate is $R_0=$ `r .035*.05/(.15+.05)*(2.5-0.2)/.01/(.2+.15+.15)`, and the endemic equilibrium susceptible population size is $\hat{S_e}=$ `r signif((.2+.15+.15)/(.035*.05/(.15+.05)),4)`.
+We can also look at what these choices imply about the life history of the host population. 
+In particular, $1/d$ is the average lifespan of an uninfected host; for this choice of $d$ that implies a lifespan of `r 1/.2` time units (we have not specified whether the timescale is in days, weeks, years, etc.).
+We can compare this to the average duration of an infection, $1/(d +\alpha+\gamma)=$ `r 1/(.2+.15+.15)` time units. 
+We can also calculate the probabilities of different outcomes for an infected individual.
+That is, the probability of recovery is $\gamma/(d+\alpha+\gamma)$, the probability of dying due to disease is $\alpha/(d+\alpha+\gamma)$ and the probability of dying of natural causes is $d/(d+\alpha+\gamma)$.
+These three probabilities are `r 0.15/.5`, `r 0.15/0.5`, and `r 0.2/0.5`, respectively.
+Given these choices, I would say that the disease we are modeling is a fairly slow-progressing disease, but one that has a high probability of death - maybe something like tuberculosis?
+
+We have explored the dynamics of this model using numerical simulation.
+Importantly, in the simulations that have been run, the starting population size is actually always smaller than the size of a fully susceptible population - we have started with $S = 70$, typically.
+The consequences of this choice are a bit unclear: it's possible that it causes the epidemics to end more quickly because the population size is already close to the endemic equilibrium, but it's equally possible that the epidemics are longer because the susceptible population has a positive growth rate in the absence of an infection. 
+*It is probably worth exploring parameter sets where the starting population size is closer to $\hat{S_0}$ to see what happens in those scenarios.*
+
+In each of the different covariation scenarios, we are comparing three different parameter sets, that produce three different $R_0$ values.
+Based on the analytical results, we vary parameters that should not impact the effect of variation and covariation on the expected $R_0$.
+
+If there is variation in contact and shedding, the expected $R_0$ is
+\begin{equation}
+E[R_0(c,s)] = R_0\left(\bar{c},\bar{s}\right)\left(1+\frac{h}{\bar{s}\left(h+\bar{s}\right)}\left(\frac{\text{cov}(c,s)}{\bar{c}} - \frac{\sigma_s^2}{h+\bar{s}}\right)\right).
+\end{equation}
+We can calculate the expected $R_0$ given our choices of parameter values
+```{r}
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
+contact.tau.params1 = c(c=.035, shed=.05, h=.15, alpha=.12, gamma=.05, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.12, sd_g=.05,b=2.5, bs=.01) # R0 = 2.55
+contact.tau.params2 = c(c=.035, shed=.05, h=.15, alpha=.1, gamma=.005, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.1, sd_g=.005,b=2.5, bs=.01) # R0 = 3.5
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(baselineparams)), (b-d)/bs),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * (0/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((0.5*sd_c*sd_s)/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((-0.5*sd_c*sd_s)/c - sd_s^2/(h+shed))))),3))
+
+data.frame(params1=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(contact.tau.params1)), (b-d)/bs),
+             with(as.data.frame(t(contact.tau.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(contact.tau.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * (0/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(contact.tau.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((0.5*sd_c*sd_s)/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(contact.tau.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((-0.5*sd_c*sd_s)/c - sd_s^2/(h+shed))))),3))
+
+data.frame(params2=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(contact.tau.params2)), (b-d)/bs),
+             with(as.data.frame(t(contact.tau.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(contact.tau.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * (0/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(contact.tau.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((0.5*sd_c*sd_s)/c - sd_s^2/(h+shed)))),
+             with(as.data.frame(t(contact.tau.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + h/(shed*(h+shed)) * ((-0.5*sd_c*sd_s)/c - sd_s^2/(h+shed))))),3))
+
+```
+If there is variation in contact and virulence, the expected $R_0$ is
+\begin{equation}
+E[R_0(c,\alpha)] = R_0\left(\bar{c},\bar{\alpha}\right)\left(1 + \frac{1}{\bar{\alpha}+\gamma+d}\left(\frac{\sigma_\alpha^2}{\bar{\alpha}+\gamma+d} - \frac{\text{cov}(c,\alpha)}{\bar{c}}\right)\right).
+\end{equation}
+We can calculate the expected $R_0$ given our choices of parameter values
+```{r}
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) 
+contact.alpha.params1 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) 
+contact.alpha.params2 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) 
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(baselineparams)), (b-d)/bs),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) - 0/c))),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) - 0.5*sd_c*sd_a/c))),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) + 0.5*sd_c*sd_a/c)))),3))
+
+data.frame(params1=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(contact.alpha.params1)), (b-d)/bs),
+             with(as.data.frame(t(contact.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(contact.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) - 0/c))),
+             with(as.data.frame(t(contact.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) - 0.5*sd_c*sd_a/c))),
+             with(as.data.frame(t(contact.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 + 1/(alpha+gamma+d) * (sd_a^2/(alpha+gamma+d) + 0.5*sd_c*sd_a/c)))),3))
+
+```
+There are a couple of issues here: the parameter sd_a is not constant across these simulations, meaning that the variation changes from the baseline and the second and third parameter sets are identical.
+
+
+If there is variation in shedding and virulence, the expected $R_0$ is
+\begin{equation}
+E[R_0(s,\alpha)] = R_0\left(\bar{s},\bar{\alpha}\right) \left(1 - \frac{h}{\bar{s}\left(h+\bar{s}\right)^2}\sigma_s^2 - \frac{h}{\bar{s}\left(h+\bar{s}\right)\left(\bar{\alpha}+\gamma+d\right)}\text{cov}(s,\alpha) + \frac{1}{\left(\bar{\alpha}+\gamma+d\right)^2}\sigma_\alpha^2\right).
+\end{equation}
+We can calculate the expected $R_0$ given our choices of parameter values
+```{r}
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) 
+tau.alpha.params1 = c(c=.074, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) 
+tau.alpha.params2 = c(c=.1, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) 
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(baselineparams)), (b-d)/bs),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0 + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(baselineparams)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 + h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2))),3))
+
+data.frame(params1=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(tau.alpha.params1)), (b-d)/bs),
+             with(as.data.frame(t(tau.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(tau.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0 + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(tau.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(tau.alpha.params1)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 + h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2))),3))
+
+data.frame(params2=c("The fully susceptible population size",
+             "The expected R0, ignoring variation",
+             "The expected R0, assuming 0 covariation",
+             "The expected R0, assuming positive covariation",
+             "The expected R0, assuming negative covariation"),
+           value=signif(c(with(as.data.frame(t(tau.alpha.params2)), (b-d)/bs),
+             with(as.data.frame(t(tau.alpha.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma)),
+             with(as.data.frame(t(tau.alpha.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0 + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(tau.alpha.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2)),
+             with(as.data.frame(t(tau.alpha.params2)), c*shed/(h+shed)*(b-d)/bs/(d+alpha+gamma) * (1 - h/(shed*(h+shed)^2)*sd_s^2 + h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a + 1/(alpha+gamma+d)^2*sd_a^2))),3))
+
+```
+
+# Lexi: read only from here to the bottom
+To make the comparison with the numerical simulations easier, we can also do similar calculations but for the endemic number of susceptible hosts (which removes any dependence on initial conditions, since the $R_0$ calculations above assume that you are starting at $\hat{S_0$}, whereas the numerical simulations assumed a starting point of $S=70$).
+Given that 
+\begin{equation}
+S_e = \frac{d  + \alpha + \gamma}{c \frac{s}{h+s}},
+\end{equation}
+then the effect of variation in $c$ is
+\begin{equation}
+E[S_e(c)] = S_e(\hat{c}) \left(1 + \frac{1}{\hat{c}^2} \sigma_c^2\right);
+\end{equation}
+the effect of variation in $s$ is 
+\begin{equation}
+E[S_e(s)] = S_e(\hat{s}) \left(1 + \frac{h}{\hat{s}^2(h+\hat{s})} \sigma_s^2\right);
+\end{equation}
+and the effect of variation in $\alpha$ is
+\begin{equation}
+E[S_e(\alpha)] = S_e(\hat{\alpha}).
+\end{equation}
+In other words, variation in contact or shedding is expected to increase the expected number of susceptible hosts at equilibrium, where variation in virulence will not affect the expected number of susceptible hosts.
+
+The effect of covariation in $c$ and $s$ will produce an expected endemic equilibrium of
+\begin{equation}
+E[S_e(c,s)] = S_e\left(\hat{c},\hat{s}\right) \left(1 + \frac{1}{\hat{c}^2} \sigma_c^2 + \frac{h}{h\hat{c}\hat{s}+\hat{c}\hat{s}^2} \text{cov}(c,s) + \frac{h}{\hat{s}^2(h+\hat{s})} \sigma_s^2\right)
+\end{equation}
+
+The effect of covariation in $c$ and $\alpha$ will produce an expected endemic equilbrium of 
+\begin{equation}
+E[S_e(c,\alpha)] = S_e\left(\hat{c},\hat{\alpha}\right) \left(1 + \frac{1}{\hat{c}^2} \sigma_c^2 - \frac{1}{\hat{c}(\hat{\alpha}+\gamma+d)} \text{cov}(c,\alpha)\right)
+\end{equation}
+
+The effect of covariation in $s$ and $\alpha$ will produce an expected endemic equilibrium of 
+\begin{equation}
+E[S_e(s,\alpha)] = S_e\left(\hat{s},\hat{\alpha}\right) \left(1 + \frac{h}{\hat{s}^2(h+\hat{s})}\sigma_s^2 - \frac{h}{\hat{s}(h+\hat{s})(\hat{\alpha}+\gamma+d)}\text{cov}(s,\alpha)\right)
+\end{equation}
+
+From this, you can see that positive covariation between contact and shedding, negative covariation between contact and virulence, or negative covariation between shedding and virulence will each increase the endemic equilibrium; covariation of the opposite sign may decrease the endemic equilibrium if it is large enough to offset the positive effects of variation in contact or shedding.
+
+We can look at these for each of the parameter sets, and compare the analytical expectation (given the parameter values) with the results of the numerical simulations.
+
+#### Effect of covariation in contact and shedding on the endemic susceptible population size
+
+Here are the analytical predictions:
+\begin{equation}
+E[S_e(c,s)] = S_e\left(\hat{c},\hat{s}\right) \left(1 + \frac{1}{\hat{c}^2} \sigma_c^2 + \frac{h}{h\hat{c}\hat{s}+\hat{c}\hat{s}^2} \text{cov}(c,s) + \frac{h}{\hat{s}^2(h+\hat{s})} \sigma_s^2\right)
+\end{equation}
+
+And here are the numerical results for different covariance scenarios:
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between contact and shedding at low R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+source("GEM_SIR_contact&tau.cov.R")
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
+contact.tau.params1 = c(c=.035, shed=.05, h=.15, alpha=.12, gamma=.05, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.12, sd_g=.05,b=2.5, bs=.01) # R0 = 2.55
+contact.tau.params2 = c(c=.035, shed=.05, h=.15, alpha=.1, gamma=.005, d=.07,
+                        sd_c=.035, sd_s=.05, sd_a=.1, sd_g=.005,b=2.5, bs=.01) # R0 = 3.5
+nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
+poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+set.seed(1234123)
+seeds <- floor(runif(20,1,1e5)) # set seeds
+x = c(S=70, I=10, R=0)
+tmax <- 150
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, baselineparams, nocorr, x),
+         mc.cores=8) -> out_nocov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, baselineparams, poscorr, x),
+         mc.cores=8) -> out_poscov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, baselineparams, negcorr, x),
+         mc.cores=8) -> out_negcov_ctau
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+```
+
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between contact and shedding at moderate R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+## second parameter set
+data.frame(params1=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params1, nocorr, x),
+         mc.cores=8) -> out_nocov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params1, poscorr, x),
+         mc.cores=8) -> out_poscov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params1, negcorr, x),
+         mc.cores=8) -> out_negcov_ctau
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+```
+
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between contact and shedding at high R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+## third parameter set
+data.frame(params2=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 + h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2)),
+             with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - h/(h*c*shed+c*shed^2)*0.5*sd_c*sd_s + h/(shed^2*(h+shed))*sd_s^2))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, nocorr, x),
+         mc.cores=8) -> out_nocov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, poscorr, x),
+         mc.cores=8) -> out_poscov_ctau
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, negcorr, x),
+         mc.cores=8) -> out_negcov_ctau
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_ctau, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_ctau[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_ctau, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.tau.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+
+```
+#### Effect of covariation in contact and virulence on the endemic susceptible population size
+
+Here are the analytical predictions:
+\begin{equation}
+E[S_e(c,\alpha)] = S_e\left(\hat{c},\hat{\alpha}\right) \left(1 + \frac{1}{\hat{c}^2} \sigma_c^2 - \frac{1}{\hat{c}(\hat{\alpha}+\gamma+d)} \text{cov}(c,\alpha)\right)
+\end{equation}
+
+And here are the numerical results for different covariance scenarios:
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between contact and virulence at low R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+source("GEM_SIR_contact&alpha.cov.R")
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
+contact.alpha.params1 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) # R0 = 2.566
+nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
+poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+set.seed(1234123)
+seeds <- floor(runif(20,1,1e5)) # set seeds
+x = c(S=70, I=10, R=0)
+tmax <- 150
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*0*sd_c*sd_a)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*0.5*sd_c*sd_a)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*(-0.5)*sd_c*sd_a))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, baselineparams, nocorr, x),
+         mc.cores=8) -> out_nocov_calpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, baselineparams, poscorr, x),
+         mc.cores=8) -> out_poscov_calpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, baselineparams, negcorr, x),
+         mc.cores=8) -> out_negcov_calpha
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+```
+
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between shedding and virulence at moderate R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+
+## second parameter set
+data.frame(params1=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*0*sd_c*sd_a)),
+             with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*0.5*sd_c*sd_a)),
+             with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + 1/c^2*sd_c^2 - 1/(c*(alpha+gamma+d))*(-0.5)*sd_c*sd_a))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params1, nocorr, x),
+         mc.cores=8) -> out_nocov_calpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params1, poscorr, x),
+         mc.cores=8) -> out_poscov_calpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_calpha(tmax, contact.alpha.params1, negcorr, x),
+         mc.cores=8) -> out_negcov_calpha
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_calpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_calpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_calpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(contact.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+
+```
+
+#### Effect of covariation in shedding and virulence on the endemic susceptible population size
+
+Here are the analytical predictions:
+\begin{equation}
+E[S_e(s,\alpha)] = S_e\left(\hat{s},\hat{\alpha}\right) \left(1 + \frac{h}{\hat{s}^2(h+\hat{s})}\sigma_s^2 - \frac{h}{\hat{s}(h+\hat{s})(\hat{\alpha}+\gamma+d)}\text{cov}(s,\alpha)\right)
+\end{equation}
+
+And here are the numerical results for different covariance scenarios:
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between shedding and virulence at low R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+source("GEM_SIR_tau&alpha.cov.R")
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
+tau.alpha.params1 = c(c=.074, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 2.59
+tau.alpha.params2 = c(c=.1, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
+                      sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 3.5
+nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
+poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+set.seed(1234123)
+seeds <- floor(runif(20,1,1e5)) # set seeds
+x = c(S=70, I=10, R=0)
+tmax <- 150
+
+## Baseline parameter set
+## Covariation is calculated from a specified correlation as cov(x,y)=corr(x,y)*sd(x)*sd(y)
+data.frame(baseline=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0*sd_s*sd_a)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a)),
+             with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*(-0.5)*sd_s*sd_a))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, baselineparams, nocorr, x),
+         mc.cores=8) -> out_nocov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, baselineparams, poscorr, x),
+         mc.cores=8) -> out_poscov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, baselineparams, negcorr, x),
+         mc.cores=8) -> out_negcov_taualpha
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(baselineparams)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+```
+
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between shedding and virulence at moderate R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+## second parameter set
+data.frame(params1=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0*sd_s*sd_a)),
+             with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a)),
+             with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*(-0.5)*sd_s*sd_a))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params1, nocorr, x),
+         mc.cores=8) -> out_nocov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params1, poscorr, x),
+         mc.cores=8) -> out_poscov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params1, negcorr, x),
+         mc.cores=8) -> out_negcov_taualpha
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params1)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+```
+
+```{r, fig.height=3, fig.width=5, units='in', fig.cap="The effect of covariation between shedding and virulence at high R0 values. Moving from left to right, the panels show the results for zero covariance, positive covariance, and negative covariance. The dashed red line shows the expected population size in the absence of any variation.", echo=FALSE}
+## third parameter set
+data.frame(params2=c(
+             "The expected Se, ignoring variation",
+             "The expected Se, assuming 0 covariation",
+             "The expected Se, assuming positive covariation",
+             "The expected Se, assuming negative covariation"),
+           value=signif(c(
+             with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed))),
+             with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0*sd_s*sd_a)),
+             with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*0.5*sd_s*sd_a)),
+             with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed)) * (1 + h/(shed^2*(h+shed))*sd_s^2 - h/(shed*(h+shed)*(alpha+gamma+d))*(-0.5)*sd_s*sd_a))),3))
+
+##  model simulations
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, nocorr, x),
+         mc.cores=8) -> out_nocov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, poscorr, x),
+         mc.cores=8) -> out_poscov_taualpha
+mclapply(seeds,
+         function(s) gillespie.SIR.cov_taualpha(tmax, tau.alpha.params2, negcorr, x),
+         mc.cores=8) -> out_negcov_taualpha
+
+par(mfrow=c(1,3), mar=c(2.5,2.5,0.5,0.5), oma=c(1.5,1.5,0,0))
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_nocov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_nocov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_nocov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_poscov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_poscov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_poscov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+plot.new()
+plot.window(xlim=c(0,150),ylim=c(0,lapply(out_negcov_taualpha, function(l) l[,2]) %>% unlist %>% max(.,na.rm=TRUE)))
+box('plot'); axis(1); axis(2)
+for (i in 1:length(seeds)) lines(out_negcov_taualpha[[i]][,c(1,2)])
+lines(0:150, lapply(out_negcov_taualpha, function(l) l[,2]) %>% do.call("cbind.data.frame",.) %>% apply(., 1, function(d) mean(d,na.rm=T)), lwd=2, col=2)
+abline(h=with(as.data.frame(t(tau.alpha.params2)), (d+alpha+gamma)/(c*shed/(h+shed))), lwd=2, lty=2, col=2)
+
+mtext(side=1, outer=TRUE, "Time")
+mtext(side=2, outer=TRUE, "Number of susceptible hosts")
+
+```

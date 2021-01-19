@@ -132,34 +132,34 @@ gillespie.SIR.cov_ctau <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
   return(results)
 }
 
-x = c(S=70, I=10, R=0)
-tmax <- 150
-
-all.new.params = c(c=.2, shed=.1, sd_c=.01, sd_s=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
-corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
-
-
-new_out <- gillespie.SIR.cov_ctau(tmax, all.new.params, corr, x)
-
-plot.ts(new_out[,2], col="blue", ylim=c(-5, 200))
-lines(new_out[,3], col="red")
-lines(new_out[,4], col="green")
-
-length(out17)
-
-lapply(new_out, function(l) l[[2]])%>%unlist%>%plot
-
-lapply(new_out, function(l) length(l[[3]]))%>%unlist%>%plot
-
-#### output
-plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",
-     type='l',lwd=1,xlab='Time', ylab="N", ylim=c(-5,200), xlim=c(0,150)) #main="beta=0.1, alpha=0.1, gamma=0.5,varB=1e-3, b=2.5, d=0.4")
-# plot number of susceptible
-lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[2]])),col="blue", 
-      type='l',lwd=1, xlab="Time", ylab="Number susceptible")
-# plot number of recovered
-lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[5]])), col="green",
-      type='l',lwd=1, xlab="Time", ylab="Number recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
-
-
+# x = c(S=70, I=10, R=0)
+# tmax <- 150
+# 
+# all.new.params = c(c=.2, shed=.1, sd_c=.01, sd_s=.01, h=.1, alpha=.01, gamma=.3, b=2.5, d=.4, bs=.01)
+# corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+# 
+# 
+# new_out <- gillespie.SIR.cov_ctau(tmax, all.new.params, corr, x)
+# 
+# plot.ts(new_out[,2], col="blue", ylim=c(-5, 200))
+# lines(new_out[,3], col="red")
+# lines(new_out[,4], col="green")
+# 
+# length(out17)
+# 
+# lapply(new_out, function(l) l[[2]])%>%unlist%>%plot
+# 
+# lapply(new_out, function(l) length(l[[3]]))%>%unlist%>%plot
+# 
+# #### output
+# plot(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) length(y[[3]]))), col="red",
+#      type='l',lwd=1,xlab='Time', ylab="N", ylim=c(-5,200), xlim=c(0,150)) #main="beta=0.1, alpha=0.1, gamma=0.5,varB=1e-3, b=2.5, d=0.4")
+# # plot number of susceptible
+# lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[2]])),col="blue", 
+#       type='l',lwd=1, xlab="Time", ylab="Number susceptible")
+# # plot number of recovered
+# lines(unlist(lapply(new_out, function(y) y[[1]])), unlist(lapply(new_out, function(y) y[[5]])), col="green",
+#       type='l',lwd=1, xlab="Time", ylab="Number recovered")
+# legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
+# 
+# 
