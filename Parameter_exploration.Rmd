@@ -407,6 +407,12 @@ mtext(side=1, outer=TRUE, "Time")
 mtext(side=2, outer=TRUE, "Number of susceptible hosts")
 
 ```
+
+Interestingly, we are not seeing the results we expected.
+In fact, the results are not even *close* to what we expected. 
+The effect of variation is much smaller than anticipated (although it is in the right direction), and it is negative, rather than positive, covariation that increases the number of susceptible hosts. 
+This is all wrong.
+
 #### Effect of covariation in contact and virulence on the endemic susceptible population size
 
 Here are the analytical predictions:
@@ -530,6 +536,9 @@ mtext(side=1, outer=TRUE, "Time")
 mtext(side=2, outer=TRUE, "Number of susceptible hosts")
 
 ```
+
+**Again**, we see that the results are all wrong. 
+The effect of variation is essentially zero, rather than being large, and positive covariation has essentially no effect whereas negative covariation has a negative effect on $\hat{S_e}$ rather than a positive effect.
 
 #### Effect of covariation in shedding and virulence on the endemic susceptible population size
 
@@ -705,3 +714,58 @@ mtext(side=1, outer=TRUE, "Time")
 mtext(side=2, outer=TRUE, "Number of susceptible hosts")
 
 ```
+
+**Again**, we're all wrong here. 
+Just as with covariation between contact and virulence, covariation between shedding and virulence has essentially no effect, and negative covariance has less of an effect than positive covariance, which is again all wrong.
+
+#### Figuring things out
+These results seem all wrong - the effects are often in the totally wrong direction from the prediction. 
+I'm not sure why, so let's dive into the simulation code to try to figure it out.
+Let's start with the case where there is positive covariation between contact and shedding.
+```{r}
+pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr){
+  ## Generate Lognormal random variables with zeros. 
+  ## traitmeans - Vector of mean trait values
+  ## traitsds - Vector of trait standard deviations
+  ## R - Correlation matrix - should have 1s along the diagonal and off-diagonal elements reflecting correlations between different variables
+  
+  ## Number of traits
+  p <- length(traitmeans);
+  mu <- matrix(0,p,1);
+  sigma <- matrix(0,p,p);
+  for (i in 1:p) {
+    mu[i] = log(traitmeans[i]^2 / sqrt(traitsds[i]^2+traitmeans[i]^2))
+    sigma[i,i] = log(1 + traitsds[i]^2/traitmeans[i]^2);
+  }
+  
+  Cov <- sqrt(sigma)%*%corr%*%sqrt(sigma);
+  X <- matrix(rnorm(p*N,0,1), nrow = N, ncol = p);
+  for (i in 1:N){
+    X[i,] <- exp(mu + chol(Cov)%*%X[i,])
+  }      
+  return(X);
+}
+
+
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
+nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
+poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+
+## generate a bunch of individuals and make sure the correlations are done correctly
+n0 <- pick_individuals_multivariate(1000, baselineparams[c('c','shed')], baselineparams[c('sd_c','sd_s')],corr=nocorr)
+n1 <- pick_individuals_multivariate(1000, baselineparams[c('c','shed')], baselineparams[c('sd_c','sd_s')],corr=poscorr)
+n2 <- pick_individuals_multivariate(1000, baselineparams[c('c','shed')], baselineparams[c('sd_c','sd_s')],corr=negcorr)
+
+## slopes are all pointing in the right direction, so it seems like the the individuals are being created correctly
+summary(lm(n0[,2]~n0[,1]))
+summary(lm(n1[,2]~n1[,1]))
+summary(lm(n2[,2]~n2[,1]))
+
+```
+One thing that might be worth checking is whether variation (not covariation) has any effect.
+This is most easily accomplished with a totally different function altogether.
+
+```{r}
+source("GEM_SIR_c_tau_alpha_variation.R")

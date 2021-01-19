@@ -89,7 +89,8 @@ gillespie.SIR.cov_ctau <- function(tmax, params, corr, x, seed=floor(runif(1,1,1
       S <- S-1
       infection <- pick_individuals_multivariate(1,traitmeans=c(c, shed), traitsds=c(sd_c, sd_s), corr=correlation)
       c_i <- c(c_i, infection[,1]) # add to list of c i
-      tau_i <- c(tau_i, (infection[,2]^2)/((h^2)+(infection[,2]^2))) # add to list of tau i
+      ## Caught a mistake here! Should be 
+      tau_i <- c(tau_i, infection[,2]/(h+infection[,2])) # add to list of tau i
     }
     else if(event==((length(c_i)+1))){ # death of I
       ind=sample(1:length(c_i),1)
