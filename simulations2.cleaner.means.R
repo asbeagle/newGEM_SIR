@@ -40,10 +40,10 @@ contact.tau.params2 = c(c=.035, shed=.05, h=.15, alpha=.1, gamma=.005, d=.07,
                         sd_c=.035, sd_s=.05, sd_a=.1, sd_g=.005,b=2.5, bs=.01) # R0 = 3.5
 
 ## Note: you reduced alpha from the baseline here, and these two parameter sets are identical
-contact.alpha.params1 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
-                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) # R0 = 2.566
-contact.alpha.params2 = c(c=.035, shed=.22, h=.2, alpha=.1, gamma=.15, d=.2,
-                          sd_c=.035, sd_s=.22, sd_a=.12, sd_g=.15, b=2.5, bs=.01) # R0 = 3.572
+contact.alpha.params1 = c(c=.035, shed=.22, h=.2, alpha=.15, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.22, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 2.566
+contact.alpha.params2 = c(c=.035, shed=.3, h=.12, alpha=.15, gamma=.15, d=.2,
+                          sd_c=.035, sd_s=.3, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 3.5
 
 tau.alpha.params1 = c(c=.074, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2,
                       sd_c=.074, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 2.59
