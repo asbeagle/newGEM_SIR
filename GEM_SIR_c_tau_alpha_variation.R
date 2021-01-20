@@ -4,7 +4,7 @@ pick_individuals <- function(N0, traitmean, traitsd) {
   return(rlnorm(N0, meanlog=meanlog, sdlog=sdlog))
 }
 
-gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
+gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5)), family=c("lognormal","normal")) {
   set.seed(seed)
   c = params["c"]
   shed = params["shed"]
@@ -21,7 +21,14 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  c_i <- pick_individuals(I, traitmean=c, traitsd=sd_c) #infection
+  if (family=="lognormal")
+    c_i <- pick_individuals(I, traitmean=c, traitsd=sd_c) #infection
+  else if (family=="normal") {
+    c_i <- rnorm(I, mean=c, sd=sd_c)
+    ## truncate to ensure positive trait values
+    c_i[c_i < 0] = 1e-5
+  }
+    
   
   # start at time 0
   t <- 0 
@@ -58,7 +65,10 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(c_i)){### infection
       S <- S-1
-      c_i <- c(c_i, pick_individuals(1, traitmean=c, traitsd=sd_c)) # add to list of c i
+      if (family=="lognormal")
+        c_i <- c(c_i, pick_individuals(1, traitmean=c, traitsd=sd_c)) # add to list of c i
+      else if (family=="normal") ## truncate to ensure positive trait values
+        c_i <- c(c_i, max(1e-5, rnorm(1, mean=c, sd=sd_c)))
     }
     else if(event==((length(c_i)+1))){ # death of I
       ind=sample(1:length(c_i),1)
@@ -97,7 +107,7 @@ gillespie.SIR.var_c <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   return(results)
 }
 
-gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
+gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5)), family=c("lognormal","normal")) {
   set.seed(seed)
   c = params["c"]
   shed = params["shed"]
@@ -115,7 +125,13 @@ gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  shed_i <- pick_individuals(I, traitmean=shed, traitsd=sd_s) #infection
+  if (family=="lognormal")
+    shed_i <- pick_individuals(I, traitmean=shed, traitsd=sd_s)
+  else if (family=="normal") {
+    shed_i <- rnorm(I, mean=shed, sd=sd_s)
+    ## truncate to ensure positive
+    shed_i[shed_i < 0] <- 1e-5
+  }
   tau_i <- shed_i/(h+shed_i)
   
   # start at time 0
@@ -152,7 +168,10 @@ gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(tau_i)){### infection
       S <- S-1
-      shed_i <- pick_individuals(1, traitmean=shed, traitsd=sd_s)
+      if (family=="lognormal")
+        shed_i <- pick_individuals(1, traitmean=shed, traitsd=sd_s)
+      else if (family=="normal")
+        shed_i <- max(1e-5, rnorm(1, mean=shed, sd=sd_s)) ## truncate to maintain positive
       tau_i <- c(tau_i, shed_i/(h+shed_i)) # add to list of c i
     }
     else if(event==((length(tau_i)+1))){ # death of I
@@ -192,7 +211,7 @@ gillespie.SIR.var_tau <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   return(results)
 }
 
-gillespie.SIR.var_alpha <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
+gillespie.SIR.var_alpha <- function(tmax, params, x, seed=floor(runif(1,1,1e5)), family=c("lognormal","normal")) {
   set.seed(seed)
   c = params["c"]
   shed = params["shed"]
@@ -210,7 +229,12 @@ gillespie.SIR.var_alpha <- function(tmax, params, x, seed=floor(runif(1,1,1e5)))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  alpha_i <- pick_individuals(I, traitmean=alpha, traitsd=sd_a) #infection
+  if (family=="lognormal")
+    alpha_i <- pick_individuals(I, traitmean=alpha, traitsd=sd_a) #infection
+  else if (family=="normal") {
+    alpha_i <- rnorm(I, mean=alpha, sd=sd_a)
+    alpha_i[alpha_i < 0] <- 1e-5 ## truncate to keep positive
+  }
 
   # start at time 0
   t <- 0 
@@ -249,7 +273,10 @@ gillespie.SIR.var_alpha <- function(tmax, params, x, seed=floor(runif(1,1,1e5)))
      }
     else if(event==((length(alpha_i)+1))){ # infection
       S <- S-1
-      alpha_i <- c(alpha_i, pick_individuals(1, traitmean=alpha, traitsd=sd_a))
+      if (family=="lognormal")
+        alpha_i <- c(alpha_i, pick_individuals(1, traitmean=alpha, traitsd=sd_a))
+      else if (family=="normal")
+        alpha_i <- c(alpha_i, max(1e-5, rnorm(1, mean=alpha, sd=sd_a))) ## truncated normal
     } 
     else if(event==(length(alpha_i)+2)){ # recovery
       R <- R+1
