@@ -31,7 +31,7 @@ seeds <- floor(runif(20,1,1e5)) # set seeds
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, d=.2, 
+baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, beta=.25, d=.2, 
                    sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01) # R0 = 1.225
 
 contact.tau.params1 = c(c=.035, shed=.05, h=.15, alpha=.12, gamma=.05, d=.07,
@@ -118,6 +118,111 @@ mclapply(seeds,
 mclapply(seeds,
          function(s) gillespie.SIR.cov_ctau(tmax, contact.tau.params2, poscorr, x),
          mc.cores=4) -> out_poscov_ctau
+
+### SIMS WITH STRATIFIED VARIATION
+
+mclapply(seeds,
+         function(s) gillespie.SIR.strat.varA(tmax, baselineparams, x),
+         mc.cores=4) -> out_strat_var_alpha
+
+mclapply(seeds,
+         function(s) gillespie.SIR.strat.varB(tmax, baselineparams, x),
+         mc.cores=4) -> out_strat_var_beta
+
+mclapply(seeds,
+         function(s) gillespie.SIR.strat.varG(tmax, baselineparams, x),
+         mc.cores=4) -> out_strat_var_gamma
+
+############################       ALPHA     #################################
+############################ STRAT VARIATION #################################
+
+## infected
+timeSeq <- 0:150
+storeMatrix.alpha.I <- array(NA, dim=c(length(timeSeq),length(out_strat_var_alpha)))
+for (j in 1:length(out_strat_var_alpha)) {
+  o <- out_strat_var_alpha[[j]]
+  storeMatrix.alpha.I[,j] <- o[,3] # num infected
+}
+
+## susceptible
+storeMatrix.alpha.S <- array(NA, dim=c(length(timeSeq),length(out_strat_var_alpha)))
+for (j in 1:length(out_strat_var_alpha)) {
+  o <- out_strat_var_alpha[[j]]
+  storeMatrix.alpha.S[,j] <- o[,2] # num susceptible
+}
+
+## recovered
+storeMatrix.alpha.R <- array(NA, dim=c(length(timeSeq),length(out_strat_var_alpha)))
+for (j in 1:length(out_strat_var_alpha)) {
+  o <- out_strat_var_alpha[[j]]
+  storeMatrix.alpha.R[,j] <- o[,4] # num recovered
+}
+
+par(mfrow=c(1,3))
+plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Variation in Alpha")
+lines(0:150, apply(storeMatrix.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
+
+############################       BETA     #################################
+############################ STRAT VARIATION #################################
+
+## infected
+timeSeq <- 0:150
+storeMatrix.beta.I <- array(NA, dim=c(length(timeSeq),length(out_strat_var_beta)))
+for (j in 1:length(out_strat_var_beta)) {
+  o <- out_strat_var_beta[[j]]
+  storeMatrix.beta.I[,j] <- o[,3] # num infected
+}
+
+## susceptible
+storeMatrix.beta.S <- array(NA, dim=c(length(timeSeq),length(out_strat_var_beta)))
+for (j in 1:length(out_strat_var_beta)) {
+  o <- out_strat_var_beta[[j]]
+  storeMatrix.beta.S[,j] <- o[,2] # num susceptible
+}
+
+## recovered
+storeMatrix.beta.R <- array(NA, dim=c(length(timeSeq),length(out_strat_var_beta)))
+for (j in 1:length(out_strat_var_beta)) {
+  o <- out_strat_var_beta[[j]]
+  storeMatrix.beta.R[,j] <- o[,4] # num recovered
+}
+
+plot(0:150, apply(storeMatrix.beta.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="N", xlab="Time", main="Variation in Beta")
+lines(0:150, apply(storeMatrix.beta.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.beta.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
+
+############################       GAMMA     #################################
+############################ STRAT VARIATION #################################
+
+## infected
+timeSeq <- 0:150
+storeMatrix.gamma.I <- array(NA, dim=c(length(timeSeq),length(out_strat_var_gamma)))
+for (j in 1:length(out_strat_var_gamma)) {
+  o <- out_strat_var_gamma[[j]]
+  storeMatrix.gamma.I[,j] <- o[,3] # num infected
+}
+
+## susceptible
+storeMatrix.gamma.S <- array(NA, dim=c(length(timeSeq),length(out_strat_var_gamma)))
+for (j in 1:length(out_strat_var_gamma)) {
+  o <- out_strat_var_gamma[[j]]
+  storeMatrix.gamma.S[,j] <- o[,2] # num susceptible
+}
+
+## recovered
+storeMatrix.gamma.R <- array(NA, dim=c(length(timeSeq),length(out_strat_var_gamma)))
+for (j in 1:length(out_strat_var_gamma)) {
+  o <- out_strat_var_gamma[[j]]
+  storeMatrix.gamma.R[,j] <- o[,4] # num recovered
+}
+
+plot(0:150, apply(storeMatrix.gamma.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="N", xlab="Time", main="Variation in Gamma")
+lines(0:150, apply(storeMatrix.gamma.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.gamma.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.5)
 
 ############################  TAU & ALPHA   #################################
 ############################ NO COVARIATION #################################
