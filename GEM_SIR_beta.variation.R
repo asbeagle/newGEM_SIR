@@ -36,8 +36,8 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   
   #start algorithm
   while(t < tmax & length(beta_i) > 0){
-    irate = beta_i
-    rrate = gamma
+    irate = beta_i*S
+    rrate = gamma*length(beta_i)
     brate <- (b - bs*(S+length(beta_i)+R)) * (S+length(beta_i)+R)
     drateS <-S*(d)
     drateI <-length(beta_i)*(d+alpha)
@@ -56,13 +56,7 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     
     ## which event happens? Draw a random uniform to determine
     rand <- runif(1)
-    
-    ## if event==1, infection
-    ## if event==2, recovery
-    ## if event==3, birth
-    ## if event==4, death of S
-    ## if event==5, death of I
-    ## if event==6, death of R
+
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(beta_i)){### infection event
       S <- S-1
@@ -90,8 +84,16 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     i <- i +1
     
   }  
-  
   results <- results[1:(i-1)]
+  ## simplify what you're storing so R doesn't crash because the datafiles are too big
+  results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                        S=sapply(results, function(r) r[[2]]), 
+                        I=sapply(results, function(r) length(r[[3]])),
+                        R=sapply(results, function(r) r[[4]]))
+  ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+  results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
+  ## these two steps reduce the size of 'results' ~1000-fold
+  
   return(results)
 }
 
@@ -101,9 +103,14 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 
 x = c(S=70, I=10, R=0)
 tmax <- 150
-params4 = c(beta=.7, alpha=.01, gamma=.3, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
+params4 = c(beta=.25, alpha=.15, gamma=.15, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
 
 out15 <- gillespie.SIR.varB(tmax, params4, x)
+
+plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
+lines(out15[,3], col="red")
+lines(out15[,4], col="green")
+
 
 ## plot S, I, R
 plot(unlist(lapply(out15, function(y) y[[1]])), unlist(lapply(out15, function(y) length(y[[3]]))), col="red",

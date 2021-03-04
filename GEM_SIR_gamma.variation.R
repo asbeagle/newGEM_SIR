@@ -98,8 +98,16 @@ gillespie.SIR.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     i <- i +1
     
   }  
-  
   results <- results[1:(i-1)]
+  ## simplify what you're storing so R doesn't crash because the datafiles are too big
+  results <- data.frame(time=sapply(results, function(r) r[[1]]),
+                        S=sapply(results, function(r) r[[2]]), 
+                        I=sapply(results, function(r) length(r[[3]])),
+                        R=sapply(results, function(r) r[[4]]))
+  ## only keep the state of the system at times 0, 0.1, 0.2, ..., tmax-0.2, tmax-0.1, tmax
+  results <- results[sapply(seq(0,tmax,1), function(t) min(which(results$time >= t))),]
+  ## these two steps reduce the size of 'results' ~1000-fold
+  
   return(results)
 }
 
@@ -108,9 +116,13 @@ gillespie.SIR.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 ## output
 x = c(S=70, I=10, R=0)
 tmax <- 150
-params4 = c(beta=.1, alpha=.01, gamma=.3, varG=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
+params4 = c(beta=.25, alpha=.15, gamma=.15, varG=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
 
 out14 <- gillespie.SIR.varG(tmax, params4, x)
+
+plot.ts(out14[,2], col="blue", ylim=c(-5, 200))
+lines(out14[,3], col="red")
+lines(out14[,4], col="green")
 
 ## plot S,I,R
 plot(unlist(lapply(out14, function(y) y[[1]])), unlist(lapply(out14, function(y) length(y[[3]]))), col="red",

@@ -39,7 +39,7 @@ gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   #start algorithm
   while(t < tmax & length(beta_i) > 0){
     irate = beta_i*S
-    rrate = gamma*I
+    rrate = gamma*length(beta_i)
     brate <- (b - bs*(S+length(beta_i)+R)) * (S+length(beta_i)+R)
     drateS <-S*(d)
     drateI <-length(beta_i)*(d+alpha)
