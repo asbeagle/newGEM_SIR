@@ -13,6 +13,11 @@
 #params8 = c(c=.085, shed=.089, sd_s=.089, sd_a=.13, sd_c=.085, sd_g=.15, 
             #h=.13, alpha=.13, gamma=.15, b=2.5, d=.4, bs=.01) # R0 = 3.55
 
+### covariation baseline params
+#baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, beta=.25, d=.2, 
+#                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01, varA=1e-3, 
+#                   varB=1e-3, varG=1e-3) # R0 = 1.225
+
 ## R0 CALCULATION
 c=.1
 shed=.05
@@ -31,9 +36,14 @@ seeds <- floor(runif(20,1,1e5)) # set seeds
 x = c(S=70, I=10, R=0)
 tmax <- 150
 
-baselineparams = c(c=.035, shed=.05, h=.15, alpha=.15, gamma=.15, beta=.25, d=.2, 
+baselineparams = c(c=.5, shed=.5, h=.15, alpha=.15, gamma=.15, beta=.25, d=.2, 
                    sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01, varA=1e-3, 
-                   varB=1e-3, varG=1e-3) # R0 = 1.225
+                   varB=1e-3, varG=1e-3, varS=1e-3)
+
+baselineparams2 = c(c=.5, shed=1, h=.15, alpha=.25, gamma=.25, beta=.025, d=.5, 
+                   sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=3, bs=.01, varA=1e-3, 
+                   varB=1e-3, varG=1e-3, varS=1e-3)
+
 
 contact.tau.params1 = c(c=.035, shed=.05, h=.15, alpha=.12, gamma=.05, d=.07,
                         sd_c=.035, sd_s=.05, sd_a=.12, sd_g=.05,b=2.5, bs=.01) # R0 = 2.55
@@ -122,34 +132,59 @@ mclapply(seeds,
 
 ### SIMS WITH STRATIFIED VARIATION
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varA(tmax, baselineparams, x),
+         function(s) gillespie.SIR.strat.varA(tmax, baselineparams2, x),
          mc.cores=4) -> out_strat_var_alpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varB(tmax, baselineparams, x),
+         function(s) gillespie.SIR.strat.varB(tmax, baselineparams2, x),
          mc.cores=4) -> out_strat_var_beta
 
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varG(tmax, baselineparams, x),
+         function(s) gillespie.SIR.strat.varG(tmax, baselineparams2, x),
          mc.cores=4) -> out_strat_var_gamma
+
+mclapply(seeds,
+         function(s) gillespie.SIR.strat.varS(tmax, baselineparams, x),
+         mc.cores=4) -> out_strat_var_shed
 
 ### SIM WITH NO VARIATION
 mclapply(seeds,
-         function(s) gillespie.SIR.noVar(tmax, baselineparams, x),
+         function(s) gillespie.SIR.noVar(tmax, baselineparams2, x),
          mc.cores=4) -> out_no_var
 
 ### SIMs WITH CONTINUOUS VARIATION
 mclapply(seeds,
-         function(s) gillespie.SIR.varB(tmax, baselineparams, x),
+         function(s) gillespie.SIR.varB(tmax, baselineparams2, x),
          mc.cores=4) -> out_cont_var_beta
 
 mclapply(seeds,
-         function(s) gillespie.SIR.varG(tmax, baselineparams, x),
+         function(s) gillespie.SIR.varG(tmax, baselineparams2, x),
          mc.cores=4) -> out_cont_var_gamma
 
 mclapply(seeds,
-         function(s) gillespie.SIR.varA(tmax, baselineparams, x),
+         function(s) gillespie.SIR.varA(tmax, baselineparams2, x),
          mc.cores=4) -> out_cont_var_alpha
+
+mclapply(seeds,
+         function(s) gillespie.SIR.varS(tmax, baselineparams, x),
+         mc.cores=4) -> out_cont_var_shed
+
+### SIMS WITH CONTINUOUS UNIFORM VARIATION
+mclapply(seeds,
+         function(s) gillespie.SIR.varB.uniform(tmax, baselineparams2, x),
+         mc.cores=4) -> out_uniform_var_beta
+
+mclapply(seeds,
+         function(s) gillespie.SIR.varG.uniform(tmax, baselineparams2, x),
+         mc.cores=4) -> out_uniform_var_gamma
+
+mclapply(seeds,
+         function(s) gillespie.SIR.varA.uniform(tmax, baselineparams2, x),
+         mc.cores=4) -> out_uniform_var_alpha
+
+mclapply(seeds,
+         function(s) gillespie.SIR.varS.uniform(tmax, baselineparams, x),
+         mc.cores=4) -> out_uniform_var_shed
 
 ############################       ALPHA     #################################
 ############################ STRAT VARIATION #################################

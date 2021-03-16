@@ -24,7 +24,7 @@ gillespie.SIR.strat.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  gamma_values<-c(.05, .15, .25)
+  gamma_values<-c(.15, .25, .35)
   gamma_i<-sample(gamma_values, 10, replace=TRUE)
   
   # start at time 0

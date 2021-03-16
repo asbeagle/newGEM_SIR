@@ -23,7 +23,7 @@ gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  beta_values<-c(.15,.25,.35)
+  beta_values<-c(.02,.025,.05)
   beta_i<-sample(beta_values,10, replace=TRUE)
   
   
@@ -46,6 +46,8 @@ gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
     drateR <- R*(d)
     
     rates<-c(irate,rrate,brate,drateS,drateI,drateR)  
+    if (t>199.5)
+      print(c(sum(irate),rrate,brate,drateS,drateI,drateR))
     
     ## what time does the event happen?
     dt <- rexp(1, rate=sum(rates))
@@ -110,10 +112,10 @@ gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
 ## output
 
 x = c(S=70, I=10, R=0)
-tmax <- 150
+tmax <- 200
 params4 = c(beta=.7, alpha=.01, gamma=.3, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
 
-out15 <- gillespie.SIR.strat.varB(tmax, params4, x)
+out15 <- gillespie.SIR.strat.varB(tmax, baselineparams, x)
 
 plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
 lines(out15[,3], col="red")
