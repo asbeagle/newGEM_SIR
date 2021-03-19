@@ -59,8 +59,9 @@ gillespie.SIR.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(alpha_i)){### death of an I
-      
-      alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
+      ## This is the mistake - don't remove an individual at random, remove the *particular* individual
+      ## alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
+      alpha_i <- alpha_i[-event]
       
     }
     else if(event==length(alpha_i)+1){ # infection
@@ -167,7 +168,7 @@ gillespie.SIR.varA.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(alpha_i)){### death of an I
       
-      alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
+      alpha_i <- alpha_i[-event]
       
     }
     else if(event==length(alpha_i)+1){ # infection
@@ -262,8 +263,9 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
     #(drateI,irate,rrate,brate,drateS,drateR)
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(alpha_i)){### death of an I
-      
-      alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
+      ## here is maybe the mistake - don't remove an individual at *random* - remove it according to its traits
+      ##alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
+      alpha_i <- alpha_i[-event]
       
     }
     else if(event==length(alpha_i)+1){ # infection
@@ -393,9 +395,10 @@ det_out_discvar <- ode(y=initial_state_discvar, times=seq(0,150,1), func=determi
 
 ## PLOT EVERYTHING
 ## Something is not right because the stochastic simulation with discrete variation does not come even remotely close to the deterministic expectation
-plot(seq(0,150,1), S_dyn_novar, type='l', lwd=2, ylim=c(30, 250))
-lines(seq(0,150,1), S_dyn_contvar, lwd=2, col=2)
+plot(seq(0,150,1), S_dyn_novar, type='l', lwd=2, ylim=c(10, 250), xlab="Time", ylab="Number susceptible")
+lines(seq(0,150,1), S_dyn_contvar, lwd=2, col=3)
 lines(seq(0,150,1), S_dyn_discvar, lwd=2, col=4)
-lines(det_out_novar[,c(1,2)], lwd=2, lty=2, col=gray(0.5))
-lines(det_out_discvar[,c(1,2)], lwd=2, lty=2, col=2)
+abline(h=det_out_novar[151,2], lwd=1, lty=2)
+abline(h=det_out_discvar[151,2], lwd=1, lty=2, col=4)
+legend(x='topright', c("No variation", "Continuous variation", "Discrete variation"), fill=c(1,3,4), bty='n')
 
