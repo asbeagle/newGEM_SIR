@@ -73,7 +73,7 @@ gillespie.SIR.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-sample(1:length(shed_i),1)]
+      shed_i <- shed_i[-event]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1
@@ -183,7 +183,7 @@ gillespie.SIR.varS.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-sample(1:length(shed_i),1)]
+      shed_i <- shed_i[-event]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1
@@ -239,13 +239,14 @@ gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   bs = params["bs"]
   d = params["d"]
   ds = params["ds"]
+  eps = params["epsilon"]
   
   S=x["S"]
   I=x["I"]
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  shed_value<-c(.2,1,2)
+  shed_value<-c(shed-eps,shed+eps)
   new_i<-sample(shed_value, I, replace=TRUE)
   shed_i <- c * (new_i)/(1+new_i)
   #beta_i <- runif(I, 0.15, 0.35) # continuous variation w/ uniform distribution
@@ -294,7 +295,7 @@ gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-sample(1:length(shed_i),1)]
+      shed_i <- shed_i[-beta]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1

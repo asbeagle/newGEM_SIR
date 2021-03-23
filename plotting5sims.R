@@ -1,8 +1,8 @@
 #### Just my big plots
 
 ### Strat Var A
-par(mfrow=c(3,3))
-plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Variation in Alpha")
+par(mfrow=c(1,2))
+plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Variation in Alpha")
 lines(0:150, apply(storeMatrix.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
@@ -22,7 +22,6 @@ legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ### cleaning sims
 
-
 ## cont var b
 plot(0:150, apply(storeMatrix.cont.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Variation in Beta")
 lines(0:150, apply(storeMatrix.cont.varB.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
@@ -36,7 +35,7 @@ lines(0:150, apply(storeMatrix.cont.varG.R, 1, mean), col="green", lwd=1.75, typ
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ## cont var A
-plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Variation in Alpha")
+plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Variation in Alpha")
 lines(0:150, apply(storeMatrix.cont.varA.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.cont.varA.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
@@ -116,24 +115,24 @@ for (j in 1:length(out_uniform_var_beta)) {
   storeMatrix.uni.varB.R[,j] <- o[,4] # num recovered
 }
 
-par(mfrow=c(1,1))
-plot(0:150, apply(storeMatrix.uni.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Uniform Var")
+par(mfrow=c(1,4))
+plot(0:150, apply(storeMatrix.uni.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
 lines(0:150, apply(storeMatrix.uni.varB.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.uni.varB.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.beta.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Strat Var")
+plot(0:150, apply(storeMatrix.beta.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
 lines(0:150, apply(storeMatrix.beta.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.beta.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.cont.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Var")
+plot(0:150, apply(storeMatrix.cont.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
 lines(0:150, apply(storeMatrix.cont.varB.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.cont.varB.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Var")
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
 lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
@@ -208,23 +207,23 @@ for (j in 1:length(out_uniform_var_gamma)) {
 }
 
 par(mfrow=c(1,4))
-plot(0:150, apply(storeMatrix.uni.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Uniform Var")
+plot(0:150, apply(storeMatrix.uni.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
 lines(0:150, apply(storeMatrix.uni.varG.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.uni.varG.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Strat Var")
+plot(0:150, apply(storeMatrix.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
 lines(0:150, apply(storeMatrix.varG.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.varG.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.cont.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Var")
+plot(0:150, apply(storeMatrix.cont.varG.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
 lines(0:150, apply(storeMatrix.cont.varG.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.cont.varG.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Var")
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
 lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
@@ -301,23 +300,23 @@ for (j in 1:length(out_uniform_var_alpha)) {
 }
 
 par(mfrow=c(1,4))
-plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Uniform Var")
+plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
 lines(0:150, apply(storeMatrix.cont.varA.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.cont.varA.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Strat Var")
+plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
 lines(0:150, apply(storeMatrix.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.uni.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Var")
+plot(0:150, apply(storeMatrix.uni.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
 lines(0:150, apply(storeMatrix.uni.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.uni.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Var")
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
 lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
@@ -414,23 +413,23 @@ for (j in 1:length(out_strat_var_shed)) {
 }
 
 par(mfrow=c(1,4))
-plot(0:150, apply(storeMatrix.cont.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Uniform Var")
+plot(0:150, apply(storeMatrix.cont.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
 lines(0:150, apply(storeMatrix.cont.varS.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.cont.varS.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.strat.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Strat Var")
+plot(0:150, apply(storeMatrix.strat.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
 lines(0:150, apply(storeMatrix.strat.varS.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.strat.varS.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.uni.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="Cont. Var")
+plot(0:150, apply(storeMatrix.uni.varS.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
 lines(0:150, apply(storeMatrix.uni.varS.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.uni.varS.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 ## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,200), ylab="N", xlab="Time", main="No Var")
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
 lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)

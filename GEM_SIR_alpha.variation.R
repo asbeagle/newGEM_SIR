@@ -225,7 +225,7 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  alpha_values<-c(alpha-eps,alpha+eps)
+  alpha_values<-c((alpha-eps),(alpha+eps))
   alpha_i<-sample(alpha_values, I, replace=TRUE)
   
   # start at time 0
@@ -266,7 +266,6 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
       ## here is maybe the mistake - don't remove an individual at *random* - remove it according to its traits
       ##alpha_i <- alpha_i[-sample(1:length(alpha_i),1)]
       alpha_i <- alpha_i[-event]
-      
     }
     else if(event==length(alpha_i)+1){ # infection
       S <- S-1
@@ -274,7 +273,7 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
       #this_gamma_r <- gamma_r[sample(1:length(gamma_r), 1)]
       #new_gamma_r <- pick_individuals(1, traitmean=this_gamma_r,traitsd=sqrt(varG))
       # If you don't want evolution, use this line
-      alpha_i <- c(alpha_i, sample(alpha_values, 1, replace=TRUE))
+      alpha_i <- c(alpha_i, sample(alpha_values, 1))
     }
     else if(event==length(alpha_i)+2){
       alpha_i <- alpha_i[-sample(1:length(alpha_i),1)] # recovery
@@ -307,6 +306,8 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   
   return(results)
 }
+
+out1<-gillespie.SIR.strat.varA(tmax, baselineparams, initial_state)
 
 
 ## Parameters that should produce a high level of difference between the no-variation and continuous variation cases
