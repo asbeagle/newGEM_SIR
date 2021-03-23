@@ -102,18 +102,6 @@ gillespie.SIR.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 }
 
 
-## output
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.01, gamma=.15, varG=1e-3, b=2, d=0.4, bs=0.01, ds=0.01, varA=1e-3)
-
-out14 <- gillespie.SIR.var.A(tmax, params4, x)
-
-plot.ts(out14[,2], col="blue", ylim=c(-5, 200))
-lines(out14[,3], col="red")
-lines(out14[,4], col="green")
-
-
 ###### continuous variation with random uniform
 gillespie.SIR.varA.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
@@ -307,6 +295,8 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   return(results)
 }
 
+run <- FALSE 
+if (run) {
 out1<-gillespie.SIR.strat.varA(tmax, baselineparams, initial_state)
 
 
@@ -402,4 +392,4 @@ lines(seq(0,150,1), S_dyn_discvar, lwd=2, col=4)
 abline(h=det_out_novar[151,2], lwd=1, lty=2)
 abline(h=det_out_discvar[151,2], lwd=1, lty=2, col=4)
 legend(x='topright', c("No variation", "Continuous variation", "Discrete variation"), fill=c(1,3,4), bty='n')
-
+}

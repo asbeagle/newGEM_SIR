@@ -41,6 +41,7 @@ library(parallel)
 seeds <- floor(runif(20,1,1e5)) # set seeds
 tmax <- 150
 
+## params_novar <- c(beta=0.0025, alpha=0.15, gamma=0.001, varG=1e-3, b=2.5, d=0.001, bs=0.01, ds=0.01, varA=0)
 baselineparams = c(c=.5, shed=1, alpha=.15, gamma=.001, beta=.0025, d=.001, 
                    sd_c=.035, sd_s=.05, sd_a=.15, sd_g=.15, b=2.5, bs=.01, varA=.15, 
                    varB=.001, varG=.15, varS=.15,epsilon=0.1, epsilon_b=.001)
@@ -134,6 +135,7 @@ mclapply(seeds,
          mc.cores=4) -> out_poscov_ctau
 
 ### SIMS WITH STRATIFIED VARIATION
+source("GEM_SIR_alpha.variation.R")
 mclapply(seeds,
          function(s) gillespie.SIR.strat.varA(tmax, baselineparams, initial_state),
          mc.cores=4) -> out_strat_var_alpha
