@@ -7,7 +7,7 @@ pick_individuals <- function(N0, traitmean, traitsd) {
 }
 
 
-
+### gamma continous variation
 gillespie.SIR.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -112,19 +112,7 @@ gillespie.SIR.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 }
 
 
-
-## output
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.15, gamma=.15, varG=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
-
-out14 <- gillespie.SIR.varG(tmax, params4, x)
-
-plot.ts(out14[,2], col="blue", ylim=c(-5, 200))
-lines(out14[,3], col="red")
-lines(out14[,4], col="green")
-
-#### STRATIFIED VARIATION IN GAMMA
+#### gamma stratified variation
 gillespie.SIR.strat.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -142,7 +130,7 @@ gillespie.SIR.strat.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  gamma_values<-c(gamma-eps,gamma+eps)
+  gamma_values<-c((gamma-eps),(gamma+eps))
   gamma_i<-sample(gamma_values, I, replace=TRUE)
   
   # start at time 0
@@ -229,21 +217,7 @@ gillespie.SIR.strat.varG <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   return(results)
 }
 
-
-
-## output
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.01, gamma=.3, varG=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
-
-out14 <- gillespie.SIR.strat.varG(tmax, params4, x)
-
-plot.ts(out14[,2], col="blue", ylim=c(-5, 200))
-lines(out14[,3], col="red")
-lines(out14[,4], col="green")
-
-
-#### continous variation with random uniform distribution
+#### gamma continuous uniform random variation
 gillespie.SIR.varG.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]

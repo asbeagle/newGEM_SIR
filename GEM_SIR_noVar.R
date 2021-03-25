@@ -1,12 +1,5 @@
 ### gillespie model with no variation, just stochasticity
 
-pick_individuals <- function(N0, traitmean, traitsd) {
-  meanlog <- log(traitmean^2/sqrt(traitsd^2+traitmean^2))
-  sdlog <- sqrt(log(traitsd^2/traitmean^2+1))
-  return(rlnorm(N0, meanlog=meanlog, sdlog=sdlog))
-}
-
-
 gillespie.SIR.noVar <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -103,75 +96,4 @@ gillespie.SIR.noVar <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   
   return(results)
 }
-
-
-
-## output
-
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.15, gamma=.15, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01)
-
-out15 <- gillespie.SIR.noVar(tmax, params4, x)
-
-plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
-lines(out15[,3], col="red")
-lines(out15[,4], col="green")
- 
-
-
-## plot S, I, R
-plot(unlist(lapply(out15, function(y) y[[1]])), unlist(lapply(out15, function(y) length(y[[3]]))), col="red",
-     type='l',lwd=1,xlab='Time', ylab="N", ylim=c(0,300), xlim=c(0,20)) #main="beta=0.1, alpha=0.1, gamma=0.5,varB=1e-3, b=2.5, d=0.4")
-# plot number of susceptible
-lines(unlist(lapply(out15, function(y) y[[1]])), unlist(lapply(out15, function(y) y[[2]])),col="blue", 
-      type='l',lwd=1, xlab="Time", ylab="Number susceptible")
-# plot number of recovered
-lines(unlist(lapply(out15, function(y) y[[1]])), unlist(lapply(out15, function(y) y[[4]])), col="green",
-      type='l',lwd=1, xlab="Time", ylab="Number recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
-
-
-# multiple runs
-
-seeds <- floor(runif(20,1,1e5)) # set seeds
-library(parallel)
-detectCores() # detect how many cores there are
-mclapply(seeds,
-         function(s) gillespie.SIR3(tmax, params4, x, s),
-         mc.cores=4) -> out
-
-## Compute number of individuals at times 0, 1, 2, ... 400
-timeSeq <- 0:400
-storeMatrix <- array(NA, dim=c(length(timeSeq),length(out)))
-for (j in 1:length(out)) {
-  o <- out[[j]]
-  recordTimes <- lapply(o, function(o2) o2[[1]]) %>% unlist
-  storeVector <- rep(0, length=length(timeSeq))
-  listInds <- sapply(timeSeq, function(t) which(recordTimes >= t) %>% min)
-  if (any(is.infinite(listInds)))
-    listInds <- listInds[-which(is.infinite(listInds))] 
-  storeVector[1:length(listInds)] <- sapply(listInds, function(i) mean(o[[i]][[3]])) ## number of infecteds
-  storeMatrix[,j] <- storeVector
-}
-
-plot.new()
-plot.window(xlim=c(0,400), ylim=c(0,2.3))
-axis(1);axis(2);box('plot')
-for (i in 1:ncol(storeMatrix)) lines(0:400, storeMatrix[,i], col=gray(0.4))
-lines(0:400, apply(storeMatrix, 1, mean), col=2, lwd=2)
-
-lapply(out, function(o) lapply(o, function(o2) o2[[1]]) %>% unlist)
-
-
-#### output
-plot(unlist(lapply(out11, function(y) y[[1]])), unlist(lapply(out11, function(y) length(y[[3]]))), col="red",
-     type='l',lwd=1,xlab='Time', ylab="N", ylim=c(-5,100), xlim=c(0,400)) #main="beta=0.1, alpha=0.1, gamma=0.5,varB=1e-3, b=2.5, d=0.4")
-# plot number of susceptible
-lines(unlist(lapply(out11, function(y) y[[1]])), unlist(lapply(out11, function(y) y[[2]])),col="blue", 
-      type='l',lwd=1, xlab="Time", ylab="Number susceptible")
-# plot number of recovered
-lines(unlist(lapply(out11, function(y) y[[1]])), unlist(lapply(out11, function(y) y[[4]])), col="green",
-      type='l',lwd=1, xlab="Time", ylab="Number recovered")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"))
 

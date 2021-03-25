@@ -6,7 +6,7 @@ pick_individuals <- function(N0, traitmean, traitsd) {
   return(rlnorm(N0, meanlog=meanlog, sdlog=sdlog))
 }
 
-
+#### shedding continuous variation
 gillespie.SIR.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -73,7 +73,7 @@ gillespie.SIR.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-event]
+      shed_i <- shed_i[-sample(1:length(shed_i),1)]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1
@@ -105,18 +105,8 @@ gillespie.SIR.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   return(results)
 }
 
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.15, gamma=.15, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01, c=.5, shed=.15, 
-            varS=1e-3)
 
-out15 <- gillespie.SIR.varS(tmax, params4, x)
-
-plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
-lines(out15[,3], col="red")
-lines(out15[,4], col="green")
-
-##### VARIATION IN SHEDDING WITH CONT UNIFORM DIST
+##### shedding uniform random variation
 gillespie.SIR.varS.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -183,7 +173,7 @@ gillespie.SIR.varS.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-event]
+      shed_i <- shed_i[-sample(1:length(shed_i),1)]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1
@@ -215,18 +205,7 @@ gillespie.SIR.varS.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
   return(results)
 }
 
-x = c(S=70, I=10, R=0)
-tmax <- 150
-params4 = c(beta=.25, alpha=.15, gamma=.15, varB=1e-3, b=2, d=0.4, bs=0.01, ds=0.01, c=.5, shed=.15, 
-            varS=1e-3)
-
-out15 <- gillespie.SIR.varS.uniform(tmax, params4, x)
-
-plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
-lines(out15[,3], col="red")
-lines(out15[,4], col="green")
-
-##### VARIATION IN SHEDDING WITH STRAT VARIATION
+##### shedding stratified variation
 gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
@@ -246,7 +225,7 @@ gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  shed_value<-c(shed-eps,shed+eps)
+  shed_value<-c((shed-eps),(shed+eps))
   new_i<-sample(shed_value, I, replace=TRUE)
   shed_i <- c * (new_i)/(1+new_i)
   #beta_i <- runif(I, 0.15, 0.35) # continuous variation w/ uniform distribution
@@ -295,7 +274,7 @@ gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
     
     else if (event==length(shed_i)+1){ ### recover, randomly remove a beta_i
       R <- R+1
-      shed_i <- shed_i[-beta]
+      shed_i <- shed_i[-sample(1:length(shed_i),1)]
     }
     else if (event==length(shed_i)+2){ ### birth
       S <- S+1
@@ -327,8 +306,3 @@ gillespie.SIR.strat.varS <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   return(results)
 }
 
-out15 <- gillespie.SIR.strat.varS(tmax, params4, x)
-
-plot.ts(out15[,2], col="blue", ylim=c(-5, 200))
-lines(out15[,3], col="red")
-lines(out15[,4], col="green")

@@ -115,10 +115,11 @@ for (j in 1:length(out_uniform_var_beta)) {
   storeMatrix.uni.varB.R[,j] <- o[,4] # num recovered
 }
 
-par(mfrow=c(1,4))
-plot(0:150, apply(storeMatrix.uni.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
-lines(0:150, apply(storeMatrix.uni.varB.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-lines(0:150, apply(storeMatrix.uni.varB.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+par(mfrow=c(1,3))
+## no var GEM
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
+lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 plot(0:150, apply(storeMatrix.beta.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
@@ -126,16 +127,11 @@ lines(0:150, apply(storeMatrix.beta.S, 1, mean), col="blue", lwd=1.75, type="l",
 lines(0:150, apply(storeMatrix.beta.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.cont.varB.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
-lines(0:150, apply(storeMatrix.cont.varB.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-lines(0:150, apply(storeMatrix.cont.varB.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+plot(0:150, apply(storeMatrix.cont.varB.I[,-which(apply(storeMatrix.cont.varB.I, 2, function(col) any(is.na(col))))], 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
+lines(0:150, apply(storeMatrix.cont.varB.S[,-which(apply(storeMatrix.cont.varB.S, 2, function(col) any(is.na(col))))], 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.cont.varB.R[,-which(apply(storeMatrix.cont.varB.R, 2, function(col) any(is.na(col))))], 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
-lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
 
 ### CONTINUOUS GAMMA
@@ -300,26 +296,29 @@ for (j in 1:length(out_uniform_var_alpha)) {
 }
 
 par(mfrow=c(1,4))
-plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Uniform Var")
-lines(0:150, apply(storeMatrix.cont.varA.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-lines(0:150, apply(storeMatrix.cont.varA.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
+lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
+
 
 plot(0:150, apply(storeMatrix.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Strat Var")
 lines(0:150, apply(storeMatrix.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-plot(0:150, apply(storeMatrix.uni.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="Cont. Var")
+plot(0:150, apply(storeMatrix.uni.alpha.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="uni Var")
 lines(0:150, apply(storeMatrix.uni.alpha.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 lines(0:150, apply(storeMatrix.uni.alpha.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
 
-## no var GEM
-plot(0:150, apply(storeMatrix.no.var.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="No Var")
-lines(0:150, apply(storeMatrix.no.var.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
-lines(0:150, apply(storeMatrix.no.var.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+plot(0:150, apply(storeMatrix.cont.varA.I, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,300), ylab="N", xlab="Time", main="cont Var")
+lines(0:150, apply(storeMatrix.cont.varA.S, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
+lines(0:150, apply(storeMatrix.cont.varA.R, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,150), ylab="N", xlab="Time")
 legend("topright",legend=c("S","I","R"),fill=c("blue","red","green"), cex=0.25)
+
+
+## no var GEM
 
 
 ## no var GEM

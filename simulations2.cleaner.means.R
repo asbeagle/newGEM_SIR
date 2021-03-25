@@ -137,11 +137,11 @@ mclapply(seeds,
 ### SIMS WITH STRATIFIED VARIATION
 source("GEM_SIR_alpha.variation.R")
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varA(tmax, baselineparams, initial_state),
+         function(s) gillespie.SIR.strat.varA(tmax, baselineparams, initial_state,seed=s),
          mc.cores=4) -> out_strat_var_alpha
 
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varB(tmax, baselineparams, initial_state),
+         function(s) gillespie.SIR.strat.varB(tmax, baselineparams, initial_state,seed=s),
          mc.cores=4) -> out_strat_var_beta
 
 mclapply(seeds,
@@ -159,15 +159,16 @@ mclapply(seeds,
 
 ### SIMs WITH CONTINUOUS VARIATION
 mclapply(seeds,
-         function(s) gillespie.SIR.varB(tmax, baselineparams, initial_state),
+         function(s) gillespie.SIR.varB(tmax, baselineparams, initial_state,seed=s),
          mc.cores=4) -> out_cont_var_beta
 
 mclapply(seeds,
          function(s) gillespie.SIR.varG(tmax, baselineparams, initial_state),
          mc.cores=4) -> out_cont_var_gamma
 
+source("GEM_SIR_alpha.variation.R")
 mclapply(seeds,
-         function(s) gillespie.SIR.varA(tmax, baselineparams, initial_state),
+         function(s) gillespie.SIR.varA(tmax, baselineparams, initial_state,seed=s),
          mc.cores=4) -> out_cont_var_alpha
 
 mclapply(seeds,
