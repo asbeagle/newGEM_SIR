@@ -3,6 +3,8 @@
 gillespie.SIR.noVar <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varB = params["varB"]
@@ -29,7 +31,7 @@ gillespie.SIR.noVar <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   
   #start algorithm
   while(t < tmax & I >0){
-    irate = beta*S*I
+    irate = (c*(shed/(1+shed)))*S*I
     rrate = gamma*I
     brate <- (b - bs*(S+I+R)) * (S+I+R)
     drateS <-S*(d)

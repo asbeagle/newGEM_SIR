@@ -11,6 +11,8 @@ pick_individuals <- function(N0, traitmean, traitsd) {
 gillespie.SIR.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varA = params["varA"]
@@ -37,7 +39,7 @@ gillespie.SIR.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   
   #start algorithm
   while(t < tmax & length(alpha_i) > 0){
-    irate = length(alpha_i)*S*beta
+    irate = length(alpha_i)*S*(c*(shed/(1+shed)))
     rrate = gamma*length(alpha_i)
     brate = (b - bs*(S+length(alpha_i)+R)) * (S+length(alpha_i)+R)
     drateS = S*(d)
@@ -105,6 +107,8 @@ gillespie.SIR.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 gillespie.SIR.varA.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varA = params["varA"]
@@ -131,7 +135,7 @@ gillespie.SIR.varA.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
   
   #start algorithm
   while(t < tmax & length(alpha_i) > 0){
-    irate = length(alpha_i)*S*beta
+    irate = length(alpha_i)*S*(c*(shed/(1+shed)))
     rrate = gamma*length(alpha_i)
     brate = (b - bs*(S+length(alpha_i)+R)) * (S+length(alpha_i)+R)
     drateS = S*(d)
@@ -203,6 +207,8 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   bs = params["bs"]
   d = params["d"]
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   gamma = params["gamma"]
   alpha = params["alpha"]
   eps = params["epsilon"]
@@ -226,7 +232,7 @@ gillespie.SIR.strat.varA <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
   
   #start algorithm
   while(t < tmax & length(alpha_i)>0 ){ 
-    irate = beta*S*(length(alpha_i))
+    irate = S*(length(alpha_i))*(c*(shed/(1+shed)))
     rrate = gamma*(length(alpha_i))
     brate <- (b - bs*(S+R+(length(alpha_i)))) * (S+R+(length(alpha_i)))
     drateS <- S *(d)

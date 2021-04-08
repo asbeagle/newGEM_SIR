@@ -7,42 +7,35 @@ library(parallel)
 seeds <- floor(runif(20,1,1e5)) # set seeds
 tmax <- 150
 
-baselineparams_high = c(c=.5, shed=3.5, alpha=.15, gamma=.15, beta=.01, d=.001, 
-                   b=2.5, bs=.01, varA=.15,varB=.001, varG=.15, varS=.15,
-                   epsilon=0.1, epsilon_b=.001)
+betaparams =  c(alpha = .01, gamma = .01, beta = .1, d = 0.001, b = 2.5, bs = .01, varB = .01, 
+                 epsilon_b = 0.01)
 
-baselineparams_low = c(c=.5, shed=.5, alpha=.01, gamma=.01, beta=.0001, d=.001, 
-                       b=2.5, bs=.01, varA=.01,varB=.0001, varG=.01, varS=.01,
-                       epsilon=0.05, epsilon_b=.0001)
+betaparams2 =  c(alpha = .03, gamma = .03, beta = .2, d = 0.001, b = 2.5, bs = .01, varB = .01, 
+                epsilon_b = 0.01)
 
-baselineparams_int = c(c=.5, shed=1, alpha=.1, gamma=.1, beta=.005, d=.001, 
-                       b=2.5, bs=.01, varA=.1,varB=.0001, varG=.1, varS=.1,
-                       epsilon=0.01, epsilon_b=.0001)
+analytical_parms_beta = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1, 
+                           b=2.5, bs=.01, varC=0.01, epsilon_c=0.01) # R0=3.8
 
 
-
-betaparams =  c(alpha = .001, gamma = .001, beta = .01, d = 0.001, b = 2.5, bs = .01, varB = .001, 
-                 epsilon_b = 0.001)
-
-initial_state <- floor(c(S =unname(((baselineparams["b"]-baselineparams["d"])/baselineparams["bs"]))-5, I=5, R=0))
+initial_state <- floor(c(S =unname(((analytical_parms_beta["b"]-analytical_parms_beta["d"])/analytical_parms_beta["bs"]))-5, I=5, R=0))
 
 ###### RUN MULTIPLE SIMULATIONS ######
 ## no variation
 source("GEM_SIR_noVar.R")
 mclapply(seeds,
-         function(s) gillespie.SIR.noVar(tmax, baselineparams_int, initial_state, seed=s),
+         function(s) gillespie.SIR.noVar(tmax, analytical_parms_beta, initial_state, seed=s),
          mc.cores=4) -> out_no_var
 
 ## stratified variation
 source("GEM_SIR_beta.variation.R")
 mclapply(seeds,
-         function(s) gillespie.SIR.strat.varB(tmax, baselineparams_int, initial_state, seed=s),
+         function(s) gillespie.SIR.strat.varB(tmax, analytical_parms_beta, initial_state, seed=s),
          mc.cores=4) -> out_strat_var_beta
 
 ## continuous variation
 source("GEM_SIR_beta.variation.R")
 mclapply(seeds,
-         function(s) gillespie.SIR.varB(tmax, baselineparams_int, initial_state,seed=s),
+         function(s) gillespie.SIR.varB(tmax, analytical_parms_beta, initial_state,seed=s),
          mc.cores=4) -> out_cont_var_beta
 
 ###### FORMAT OUTPUT ######

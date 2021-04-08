@@ -10,9 +10,12 @@ pick_individuals <- function(N0, traitmean, traitsd) {
 gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varB = params["varB"]
+  varC = params["varC"]
   b = params["b"]
   bs = params["bs"]
   d = params["d"]
@@ -23,7 +26,10 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  beta_i <- pick_individuals(I, traitmean=beta, traitsd=sqrt(varB))
+  new_i<-pick_individuals(I, traitmean=c, traitsd=sqrt(varC))
+  beta_i <- new_i * (shed)/(1+shed)
+  
+  #beta_i <- pick_individuals(I, traitmean=beta, traitsd=sqrt(varB))
   #beta_i <- runif(I, 0.15, 0.35) # continuous variation w/ uniform distribution
   # vary shedding with c * s/(1+s) -> beta, c=.5, s= 1, .5, 2
   # varrying beta is equivalent to varrying c with a constant s
@@ -47,7 +53,6 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     drateR <- R*(d)
     
     rates<-c(irate,rrate,brate,drateS,drateI,drateR)  
-    print(rates)
     ## what time does the event happen?
     dt <- rexp(1, rate=sum(rates))
     
@@ -63,7 +68,9 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(beta_i)){### infection event
       S <- S-1
-      beta_i <- c(beta_i, pick_individuals(1, traitmean=beta, traitsd=sqrt(varB)))
+      new_i<-pick_individuals(1, traitmean=c, traitsd=sqrt(varC))
+      new_c_i <- new_i * (shed)/(1+shed)
+      beta_i <- c(beta_i, new_c_i)
     }
 
     else if (event==length(beta_i)+1){ ### recover, remove a beta_i
@@ -104,9 +111,12 @@ gillespie.SIR.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
 gillespie.SIR.varB.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varB = params["varB"]
+  varC = params["varC"]
   b = params["b"]
   bs = params["bs"]
   d = params["d"]
@@ -117,8 +127,8 @@ gillespie.SIR.varB.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  beta_i <- runif(I, .02,.04) # continuous with uniform distribution
-
+  new_c <- runif(I, .02,.04) # continuous with uniform distribution
+  beta_i <- new_c *(shed/(1+shed))
   # vary shedding with c * s/(1+s) -> beta, c=.5, s= 1, .5, 2
   # varrying beta is equivalent to varrying c with a constant s
   
@@ -157,7 +167,8 @@ gillespie.SIR.varB.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(beta_i)){### infection event
       S <- S-1
-      beta_i <- c(beta_i, runif(1, .02,.04))
+      new_c <-runif(1, .02,.04)
+      beta_i <- c(beta_i, new_c*(shed/1+shed))
     }
     
     else if (event==length(beta_i)+1){ ### recover, randomly remove a beta_i
@@ -199,22 +210,26 @@ gillespie.SIR.varB.uniform <- function(tmax, params, x, seed=floor(runif(1,1,1e5
 gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
   beta = params["beta"]
+  c = params["c"]
+  shed = params["shed"]
   alpha = params["alpha"]
   gamma = params["gamma"]
   varB = params["varB"]
+  varC = params["varC"]
   b = params["b"]
   bs = params["bs"]
   d = params["d"]
   ds = params["ds"]
-  eps_b = params["epsilon_b"]
+  eps_c = params["epsilon_c"]
   
   S=x["S"]
   I=x["I"]
   R=x["R"]
   
   ## draw the traits of our infected individuals
-  beta_values<-c((beta-eps_b),(beta+eps_b))
-  beta_i<-sample(beta_values, I, replace=TRUE)
+  c_value<-c((c-eps_c),(c+eps_c))
+  new_i<-sample(c_value, I, replace=TRUE)
+  beta_i <- new_i * (shed)/(1+shed)
   
   
   # start at time 0
@@ -257,7 +272,9 @@ gillespie.SIR.strat.varB <- function(tmax, params, x, seed=floor(runif(1,1,1e5))
     event <- 1 + sum(rand > wheel) 
     if (event%in%1:length(beta_i)){### infection event
       S <- S-1
-      beta_i <- c(beta_i, sample(beta_values, 1, replace=TRUE))
+      new_i<-sample(c_value, 1, 2)
+      new_c_i<- new_i * (shed)/(1+shed)
+      beta_i <- c(beta_i, new_c_i)
     }
     
     else if (event==length(beta_i)+1){ ### recover,remove a beta_i
