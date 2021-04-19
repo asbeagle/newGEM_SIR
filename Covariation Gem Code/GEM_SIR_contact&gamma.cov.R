@@ -130,17 +130,17 @@ return(results)
 
 
 
-x = c(S=70, I=10, R=0)
-tmax <- 150
+#x = c(S=70, I=10, R=0)
+#tmax <- 150
 
-cov_parms = c(c=.1, shed=.05, sd_c=.01, sd_g=.1, alpha=.1, gamma=.1, b=2.5, d=.1, bs=.01)
-corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+#cov_parms = c(c=.1, shed=.05, sd_c=.01, sd_g=.1, alpha=.1, gamma=.1, b=2.5, d=.1, bs=.01)
+#corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
 
-cov_out2 <- gillespie.SIR.cov_cgamma(tmax, cov_parms, corr, initial_state)
+#cov_out2 <- gillespie.SIR.cov_cgamma(tmax, cov_parms, corr, initial_state)
 
-par(mfrow=c(1,1))
-plot.ts(cov_out2[,2], col="blue", ylim=c(-5, 250))
-lines(cov_out2[,3], col="red")
-lines(cov_out2[,4], col="green")
+#par(mfrow=c(1,1))
+#plot.ts(cov_out2[,2], col="blue", ylim=c(-5, 250))
+#lines(cov_out2[,3], col="red")
+#lines(cov_out2[,4], col="green")
 

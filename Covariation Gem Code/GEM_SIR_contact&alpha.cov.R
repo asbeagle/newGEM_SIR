@@ -61,7 +61,7 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
   
   #start algorithm
   while(t < tmax & length(c_i) >0 ){ 
-    irate = c_i*((shed)/(h+shed))*S
+    irate = c_i*(shed/(1+shed))*S
     rrate = gamma*(length(c_i))
     brate <- (b - bs*(S+R+(length(c_i)))) * (S+R+(length(c_i)))
     drateS <-S*(d)
@@ -88,25 +88,25 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     if (event%in%1:length(c_i)){### infection
       S <- S-1
       infection <- pick_individuals_multivariate(1,traitmeans=c(c, alpha), traitsds=c(sd_c, sd_a), corr=correlation)
-      c_i <- c(c_i, infection[,1]) # add to list of beta i
-      alpha_i<-c(alpha_i, infection[,2]) # add to list of alpha i
+      c_i <-    c(c_i, infection[,1]) # add to list of beta i
+      alpha_i<- c(alpha_i, infection[,2]) # add to list of alpha i
     }
-    else if(event%in%((length(c_i)+1):(length(c_i)+length(alpha_i)))){ # death of I
-      c_i <- c_i[-(event-length(alpha_i))]
-      alpha_i<- alpha_i[-(event-length(alpha_i))]
+    else if(event%in%((length(c_i)+1):(length(c_i)+(length(alpha_i))))){ # death of I
+      c_i <-     c_i[-(event-length(alpha_i))]
+      alpha_i<-  alpha_i[-(event-length(alpha_i))]
     } 
     
-    else if(event==(2*length(c_i)+1)){ # recovery
+    else if(event==(2*length(c_i))+1){ # recovery
       R <- R+1
       ind=sample(1:length(c_i),1)
-      c_i<-c_i[-(ind)] 
-      alpha_i<-alpha_i[-(ind)]
+      c_i<- c_i[-(ind)] 
+      alpha_i<- alpha_i[-(ind)]
     }
     
-    else if (event==(2*length(c_i)+2)){ ### birth
+    else if (event==(2*length(c_i))+2){ ### birth
       S <- S+1
     }
-    else if (event==(2*length(c_i)+3)) { ### death of S
+    else if (event==(2*length(c_i))+3) { ### death of S
       S <- S-1
     }
     else    {   ### death of R
@@ -129,7 +129,19 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
     ## these two steps reduce the size of 'results' ~1000-fold
     
     return(results)
-  }
+}
+
+#contact_alpha_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1, 
+                      # b=2.5, bs=.01, sd_c=1e-6, sd_a=1e-6)
+
+#out_cov<-gillespie.SIR.cov_calpha(tmax, contact_alpha_pars, nocorr, initial_state)
+
+#par(mfrow=c(1,1))
+#plot.ts(out_cov[,2], col="blue", ylim=c(-5, 250))
+#lines(out_cov[,3], col="red")
+#lines(out_cov[,4], col="green")
+
+
 
 # 
 # x = c(S=70, I=10, R=0)
@@ -139,7 +151,7 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
 # corr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 # 
 # 
-# new_out <- gillespie.SIR.cov_calpha(tmax, all.new.params2, corr, x)
+#new_out <- gillespie.SIR.cov_calpha(tmax, all.new.params2, corr, x)
 # 
 # plot.ts(new_out[,2], col="blue", ylim=c(-5, 150))
 # lines(new_out[,3], col="red")
