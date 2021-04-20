@@ -70,7 +70,7 @@ gillespie.SIR.cov_alphagamma <- function(tmax, params, corr, x, seed=floor(runif
     drateR <- R*(d)
     
     rates<-c(drateI,rrate,irate,brate,drateS,drateR)
-    print(rates)
+    #print(rates)
     ## what time does the event happen?
     dt <- rexp(1, rate=sum(rates))
     
@@ -91,7 +91,7 @@ gillespie.SIR.cov_alphagamma <- function(tmax, params, corr, x, seed=floor(runif
     else if(event%in%((length(alpha_i)+1):(length(alpha_i)+length(gamma_i)))){ # recovery
       R <- R+1
       alpha_i<-alpha_i[-(event-length(alpha_i))]
-      gamma_i<-gamma_i[-(event-length(alpha_i))]
+      gamma_i<-gamma_i[-(event-length(gamma_i))] 
     } 
     
     else if(event==(2*length(alpha_i))+1){ # infection
@@ -129,17 +129,13 @@ gillespie.SIR.cov_alphagamma <- function(tmax, params, corr, x, seed=floor(runif
   return(results)
 }
 
-#x = c(S=70, I=10, R=0)
-#tmax <- 150
+initial_state = c(S=70, I=10, R=0)
+tmax <- 150
 
 cov_parms = c(c=.1, shed=.05, sd_a=1e-6, sd_g=1e-6, alpha=.1, gamma=.12, b=2.5, d=.1, bs=.01)
-#corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+corr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 
-
-#cov_out2 <- gillespie.SIR.cov_cgamma(tmax, cov_parms, corr, initial_state)
-
-
-out_cov19<-gillespie.SIR.cov_alphagamma(tmax,cov_parms, nocorr, initial_state)
+out_cov19<-gillespie.SIR.cov_alphagamma(tmax,cov_parms, corr, initial_state)
 
 par(mfrow=c(1,1))
 plot.ts(out_cov19[,2], col="blue", ylim=c(-5, 250))
