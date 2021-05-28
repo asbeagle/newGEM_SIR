@@ -142,4 +142,3 @@ plot.ts(out_cov19[,2], col="blue", ylim=c(-5, 250))
 lines(out_cov19[,3], col="red")
 lines(out_cov19[,4], col="green")
 
-
