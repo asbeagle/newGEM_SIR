@@ -130,4 +130,3 @@ gillespie.SIR.cov_alphagamma <- function(tmax, params, corr, x, seed=floor(runif
 }
 
 
-
