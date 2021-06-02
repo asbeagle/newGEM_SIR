@@ -86,7 +86,6 @@ gillespie.SIR.cov_cshed <- function(tmax, params, corr, x, seed=floor(runif(1,1,
       S <- S-1
       infection <- pick_individuals_multivariate(1,traitmeans=c(c, shed), traitsds=c(sd_c, sd_s), corr=correlation)
       c_i <- c(c_i, infection[,1]) # add to list of c i
-      ## Caught a mistake here! Should be 
       shed_i <- c(shed_i, infection[,2]) # add to list of shed i
     }
     else if(event==((length(c_i)+1))){ # death of I

@@ -91,7 +91,7 @@ gillespie.SIR.cov_shedalpha <- function(tmax, params, corr, x, seed=floor(runif(
       alpha_i<-c(alpha_i, infection[,2]) # add to list of alpha i
     }
     else if(event%in%((length(shed_i)+1):(length(shed_i)+(length(alpha_i))))){ # death of I
-      shed_i <- shed_i[-(event-length(alpha_i))]
+      shed_i <- shed_i[-(event-length(shed_i))]
       alpha_i<- alpha_i[-(event-length(alpha_i))]
     } 
     
@@ -130,14 +130,4 @@ gillespie.SIR.cov_shedalpha <- function(tmax, params, corr, x, seed=floor(runif(
   return(results)
 }
 
-she_alpha_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1, 
-                       b=2.5, bs=.01, sd_s=1e-6, sd_a=1e-6)
-
-
-cov_out4 <- gillespie.SIR.cov_shedalpha(tmax, she_alpha_pars, nocorr, initial_state)
-
-par(mfrow=c(1,1))
-plot.ts(cov_out4[,2], col="blue", ylim=c(-5, 250))
-lines(cov_out4[,3], col="red")
-lines(cov_out4[,4], col="green")
 

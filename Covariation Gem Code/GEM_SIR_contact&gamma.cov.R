@@ -91,8 +91,8 @@ gillespie.SIR.cov_cgamma <- function(tmax, params, corr, x, seed=floor(runif(1,1
     }
     else if(event%in%((length(c_i)+1):(length(c_i)+length(gamma_i)))){ # recovery
       R <- R+1
-      c_i <- c_i[-(event-length(gamma_i))]
-      gamma_i<- gamma_i[-(event-length(gamma_i))]
+      c_i<-c_i[-(event-length(c_i))]
+      gamma_i<-gamma_i[-(event-length(gamma_i))] 
     }
     else if(event==(2*(length(c_i)))+1){ # death of I
       ind=sample(1:length(c_i),1)

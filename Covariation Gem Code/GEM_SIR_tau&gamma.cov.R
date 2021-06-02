@@ -90,8 +90,8 @@ gillespie.SIR.cov_shedgamma <- function(tmax, params, corr, x, seed=floor(runif(
     }
     else if(event%in%((length(shed_i)+1):(length(shed_i)+length(gamma_i)))){ # recovery
       R <- R+1
-      shed_i <- shed_i[-(event-length(gamma_i))]
-      gamma_i<- gamma_i[-(event-length(gamma_i))]
+      shed_i<-shed_i[-(event-length(shed_i))]
+      gamma_i<-gamma_i[-(event-length(gamma_i))] 
     }
     else if(event==(2*(length(shed_i)))+1){ # death of I
       ind=sample(1:length(shed_i),1)

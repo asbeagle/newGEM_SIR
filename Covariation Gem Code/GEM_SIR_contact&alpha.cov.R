@@ -92,7 +92,7 @@ gillespie.SIR.cov_calpha <- function(tmax, params, corr, x, seed=floor(runif(1,1
       alpha_i<- c(alpha_i, infection[,2]) # add to list of alpha i
     }
     else if(event%in%((length(c_i)+1):(length(c_i)+(length(alpha_i))))){ # death of I
-      c_i <-     c_i[-(event-length(alpha_i))]
+      c_i <-     c_i[-(event-length(c_i))]
       alpha_i<-  alpha_i[-(event-length(alpha_i))]
     } 
     
