@@ -129,6 +129,8 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
     else {   ### death of R
       R <- R-1
     }
+    if (ID > nrow(storage)) ## add more rows to storage if necessary
+      storage <- rbind(storage, data.frame(ID=(1e5+1):2e5, c=rep(NA,1e5), shed=rep(NA,1e5), alpha=rep(NA,1e5), gamma=rep(NA,1e5), numInf=rep(0,1e5), tInf=rep(NA,1e5), tEnd=rep(Inf,1e5)))
     
     #print(storage[1:ID,])
     #readline(prompt="Press [enter] to continue")
@@ -138,6 +140,10 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
   popSizes <- popSizes[1:i]
   popSizes <- do.call('rbind.data.frame',popSizes)
   colnames(popSizes) <- c('t','S','I','R')
+  ## Trim this down to store the population sizes at particular points in time (for now, just every timestep)
+  ## Find the population sizes just before timepoint 1, 2, 3, etc. and store those
+  popSizes <- popSizes[c(1,sapply(1:tmax, function(T) max(which(popSizes$t < T)))),]
+  ## Trim the blank row from storage
   storage <- storage[1:ID,]
   results <- list(popSizes, storage)
   return(results)
@@ -156,12 +162,24 @@ gillespie.SIR.cov_storage(tmax=20,
                           x=c(S=140,I=10,R=0), 
                           covParams=c('shed','gamma')) -> example2
 
-
-gillespie.SIR.cov_storage(tmax=20, 
+library(parallel)
+mclapply(1:4, 
+         function(i) gillespie.SIR.cov_storage(tmax=20, 
                           params=params, 
                           corr=matrix(c(1,0,0,1), nrow=2, byrow=T), 
                           x=c(S=140,I=10,R=0), 
-                          covParams=c('alpha','gamma')) -> example3
+                          covParams=c('alpha','gamma')),
+         mc.cores=4) -> example
+
+## Organizing the population size results for plotting
+## Create a dataframe containing time in the first column and the susceptible population sizes in each replicate simulation in the other columns
+timeSeq <- 0:tmax
+Sdataframe <- array(NA, dim=c(length(timeSeq), length(example)+1))
+Sdataframe[,1] <- timeSeq
+for (i in 1:length(example)) Sdataframe[,i+1] <- example[[i]][[1]]$S
+
+
+
 
 ## Plots you can make
 ## Easy stuff like population dynamics
