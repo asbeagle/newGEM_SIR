@@ -151,24 +151,24 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
 
 params = c(c=.1, shed=.05, alpha=.1, gamma=.12, sd_c=0.05, sd_shed=0.025, sd_alpha=0.05, sd_gamma=0.06, b=2.5, d=.1, bs=.01)
 gillespie.SIR.cov_storage(tmax=20, 
-                          params=params, 
-                          corr=matrix(c(1,0,0,1), nrow=2, byrow=T), 
-                          x=c(S=140,I=10,R=0), 
+                          params=contact_gamma_pars, 
+                          corr=nocorr, 
+                          x=initial_state, 
                           covParams=c('c','alpha')) -> example1
 
 gillespie.SIR.cov_storage(tmax=20, 
                           params=params, 
                           corr=matrix(c(1,0,0,1), nrow=2, byrow=T), 
-                          x=c(S=140,I=10,R=0), 
+                          x=initial_state, 
                           covParams=c('shed','gamma')) -> example2
 
 library(parallel)
-mclapply(1:4, 
+mclapply(seeds, 
          function(i) gillespie.SIR.cov_storage(tmax=20, 
-                          params=params, 
-                          corr=matrix(c(1,0,0,1), nrow=2, byrow=T), 
-                          x=c(S=140,I=10,R=0), 
-                          covParams=c('alpha','gamma')),
+                          params=contact_alpha_pars, 
+                          corr=nocorr, 
+                          initial_state, 
+                          covParams=c('alpha','c')),
          mc.cores=4) -> example
 
 ## Organizing the population size results for plotting
@@ -178,11 +178,13 @@ Sdataframe <- array(NA, dim=c(length(timeSeq), length(example)+1))
 Sdataframe[,1] <- timeSeq
 for (i in 1:length(example)) Sdataframe[,i+1] <- example[[i]][[1]]$S
 
+plot(0:20, apply(Sdataframe, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,200), ylab="S", xlab="Time", main="No Cov")
+
 
 
 
 ## Plots you can make
 ## Easy stuff like population dynamics
-plot(example3[[1]]$t, example3[[1]]$S, type='l', xlab='Time', ylab='S(t)')
+plot(example1[[1]]$t, example1[[1]]$S, type='l', xlab='Time', ylab='S(t)')
 ## More interesting stuff like histograms of fitness (probably should censor any individual that was still alive, since its fitness is incomplete)
 with(subset(example3[[2]], !is.infinite(tInf)), hist(numInf, breaks=max(numInf)+1)) ## most individuals have 0 fitness

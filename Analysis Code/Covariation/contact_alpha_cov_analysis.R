@@ -12,8 +12,12 @@ negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 
 
-contact_alpha_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1, 
+contact_alpha_pars_og = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1, 
                        b=2.5, bs=.01, sd_c=.5, sd_a=.5) # R0=3.8
+
+contact_alpha_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, sd_c=0.5, sd_shed=0.025, 
+                     sd_alpha=0.5, sd_gamma=0.5, b=2.5, d=.1, bs=.01)
+
 
 
 initial_state <- floor(c(S =unname(((contact_alpha_pars["b"]-contact_alpha_pars["d"])/contact_alpha_pars["bs"]))-5, I=5, R=0))
@@ -25,6 +29,108 @@ mclapply(seeds,
          function(s) gillespie.SIR.noVar(tmax, contact_alpha_pars, initial_state),
          mc.cores=4) -> out_no_var
 
+## no covariation
+mclapply(seeds, 
+         function(i) gillespie.SIR.cov_storage(tmax=20, 
+                                               params=contact_alpha_pars, 
+                                               corr=nocorr, 
+                                               initial_state, 
+                                               covParams=c('alpha','c')),
+         mc.cores=4) -> example
+
+## negative covariation
+mclapply(seeds, 
+         function(i) gillespie.SIR.cov_storage(tmax=100, 
+                                               params=contact_alpha_pars, 
+                                               corr=negcorr, 
+                                               x=c(S=235,I=5,R=0), 
+                                               covParams=c('alpha','c')),
+         mc.cores=4) -> out_negcov_alpha_contact
+
+## positive covariation
+mclapply(seeds, 
+         function(i) gillespie.SIR.cov_storage(tmax=100, 
+                                               params=contact_alpha_pars, 
+                                               corr=poscorr, 
+                                               initial_state, 
+                                               covParams=c('alpha','c')),
+         mc.cores=4) -> out_poscov_alpha_contact
+
+### Format Output ###
+
+### no covariation
+# susceptible
+timeSeq <- 0:100
+alpha_contact_S_nocov <- array(NA, dim=c(length(timeSeq), length(out_nocov_alpha_contact)+1))
+alpha_contact_S_nocov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_S_nocov)) alpha_contact_S_nocov[,i+1] <- out_nocov_alpha_contact[[i]][[1]]$S
+
+# infected
+alpha_contact_I_nocov <- array(NA, dim=c(length(timeSeq), length(out_nocov_alpha_contact)+1))
+alpha_contact_I_nocov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_I_nocov)) alpha_contact_I_nocov[,i+1] <- out_nocov_alpha_contact[[i]][[1]]$I
+
+# recovered
+alpha_contact_R_nocov <- array(NA, dim=c(length(timeSeq), length(out_nocov_alpha_contact)+1))
+alpha_contact_R_nocov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_R_nocov)) alpha_contact_R_nocov[,i+1] <- out_nocov_alpha_contact[[i]][[1]]$R
+
+### negative covariation
+# susceptible
+timeSeq <- 0:100
+alpha_contact_S_negcov <- array(NA, dim=c(length(timeSeq), length(out_negcov_alpha_contact)+1))
+alpha_contact_S_negcov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_S_negcov)) alpha_contact_S_negcov[,i+1] <- out_negcov_alpha_contact[[i]][[1]]$S
+
+# infected
+alpha_contact_I_negcov <- array(NA, dim=c(length(timeSeq), length(out_negcov_alpha_contact)+1))
+alpha_contact_I_negcov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_I_negcov)) alpha_contact_I_negcov[,i+1] <- out_negcov_alpha_contact[[i]][[1]]$I
+
+# recovered
+alpha_contact_R_negcov <- array(NA, dim=c(length(timeSeq), length(out_negcov_alpha_contact)+1))
+alpha_contact_R_negcov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_R_negcov)) alpha_contact_R_negcov[,i+1] <- out_negcov_alpha_contact[[i]][[1]]$R
+
+### positive covariation
+# susceptible
+timeSeq <- 0:100
+alpha_contact_S_poscov <- array(NA, dim=c(length(timeSeq), length(out_poscov_alpha_contact)+1))
+alpha_contact_S_poscov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_S_poscov)) alpha_contact_S_poscov[,i+1] <- out_poscov_alpha_contact[[i]][[1]]$S
+
+# infected
+alpha_contact_I_poscov <- array(NA, dim=c(length(timeSeq), length(out_poscov_alpha_contact)+1))
+alpha_contact_I_poscov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_I_poscov)) alpha_contact_I_poscov[,i+1] <- out_poscov_alpha_contact[[i]][[1]]$I
+
+# recovered
+alpha_contact_R_poscov <- array(NA, dim=c(length(timeSeq), length(out_poscov_alpha_contact)+1))
+alpha_contact_R_poscov[,1] <- timeSeq
+for (i in 1:length(alpha_contact_R_poscov)) alpha_contact_R_poscov[,i+1] <- out_poscov_alpha_contact[[i]][[1]]$R
+
+### Plot 
+par(mfrow=c(1,3))
+## No Cov
+plot(0:100, apply(alpha_contact_S_nocov, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time", main="No Cov")
+lines(0:100, apply(alpha_contact_I_nocov, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+lines(0:100, apply(alpha_contact_R_nocov, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+
+## Neg Cov
+plot(0:100, apply(alpha_contact_S_negcov, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time", main="Neg Cov")
+lines(0:100, apply(alpha_contact_I_negcov, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+lines(0:100, apply(alpha_contact_R_negcov, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+
+## Pos Cov
+plot(0:100, apply(alpha_contact_S_poscov, 1, mean), col="blue", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time", main="Pos Cov")
+lines(0:100, apply(alpha_contact_I_poscov, 1, mean), col="red", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+lines(0:100, apply(alpha_contact_R_poscov, 1, mean), col="green", lwd=1.75, type="l", ylim=c(0,250), ylab="S", xlab="Time")
+
+
+
+
+
+################################### ORIGINAL GEM CODE ##################################################
 ## no corr
 source("GEM_SIR_contact&alpha.cov.R")
 mclapply(seeds,
