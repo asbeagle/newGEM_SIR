@@ -30,12 +30,14 @@ mclapply(seeds,
          mc.cores=4) -> out_no_var
 
 ## no covariation
+source("GEM_SIR_cov_storage.R")
 mclapply(seeds, 
          function(i) gillespie.SIR.cov_storage(tmax=20, 
                                                params=contact_alpha_pars, 
                                                corr=nocorr, 
                                                initial_state, 
-                                               covParams=c('alpha','c')),
+                                               covParams=c('alpha','c'),
+                                               seed=i),
          mc.cores=4) -> example
 
 ## negative covariation
