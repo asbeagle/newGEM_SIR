@@ -74,6 +74,7 @@ If there is covariation between shedding rate $\lambda$ and virulence $\alpha$, 
 E[R_0(\lambda,\alpha)] = R_0\left(\bar{\lambda},\bar{\alpha}\right) + \frac{1}{2}(&-\frac{2h}{\bar{\lambda}\left(h+\bar{\lambda}\right)^2}R_0\left(\bar{\lambda},\bar{\alpha}\right)\sigma_\lambda^2 - \frac{2h}{\bar{\lambda}\left(h+\bar{\lambda}\right)\left(\bar{\alpha}+\gamma+\mu\right)}R_0\left(\bar{\lambda},\bar{\alpha}\right)\text{cov}(\lambda,\alpha) \\
 &+ \frac{2}{\left(\bar{\alpha}+\gamma+\mu\right)^2}R_0\left(\bar{\lambda},\bar{\alpha}\right)\sigma_\alpha^2)
 \end{align*}
+
 \begin{equation}
 E[R_0(\lambda,\alpha)] = R_0\left(\bar{\lambda},\bar{\alpha}\right) \left(1 - \frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)^2}\sigma_\lambda^2 - \frac{h}{\bar{\lambda}\left(h+\bar{\lambda}\right)\left(\bar{\alpha}+\gamma+\mu\right)}\text{cov}(\lambda,\alpha) + \frac{1}{\left(\bar{\alpha}+\gamma+\mu\right)^2}\sigma_\alpha^2\right)
 \end{equation}
@@ -83,6 +84,14 @@ For example, if the variation in $\lambda$ is small and there is negative covari
 However, high variation in $\lambda$ could counteract that. 
 On the other hand, if the variation in $\alpha$ is small and there is positive covariation between $\lambda$ and $\alpha$ (so that there is a trade-off between virulence and shedding), then covariation will decrease the expected $R_0$.
 However, high variation in $\alpha$ could counteract that.
+
+If there is covariation between virulence $\alpha$ and recovery rate $\gamma$, then the expected value of $R_0$ is 
+\begin{align*}
+E[R_0(\alpha,\gamma)] &= R_0\left(\bar{\alpha},\bar{\gamma}\right) + \frac{1}{2}\left(\frac{2}{(\bar{\alpha} + \bar{\gamma} + \mu)^2} R_0\left(\bar{\alpha},\bar{\gamma}\right) \sigma_\alpha^2 + \frac{4}{(\bar{\alpha} + \bar{\gamma} + \mu)^2} R_0\left(\bar{\alpha},\bar{\gamma}\right) \text{Cov}(\alpha,\gamma) + \frac{2}{(\bar{\alpha} + \bar{\gamma} + \mu)^2} R_0\left(\bar{\alpha},\bar{\gamma}\right) \sigma_\gamma^2 \right) \\
+&= R_0\left(\bar{\alpha},\bar{\gamma}\right) \left(1 + \frac{1}{(\bar{\alpha} + \bar{\gamma} + \mu)^2}\left(\sigma_\alpha^2 + 2\text{Cov}(\alpha,\gamma) + \sigma_\gamma^2 \right)\right)
+\end{align*}
+
+Variation in both virulence and recovery tend to make the epidemic bigger, an effect that will be accentuated by positive covariation. 
 
 Summarizing, here are the effects of variation:
 \begin{align}

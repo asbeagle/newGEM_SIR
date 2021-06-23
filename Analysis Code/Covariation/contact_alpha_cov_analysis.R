@@ -17,6 +17,8 @@ contact_alpha_pars_og = c(c=.1, shed=.05, alpha=.1, gamma=.1, beta=.25, d=.1,
 
 contact_alpha_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, sd_c=0.5, sd_shed=0.025, 
                      sd_alpha=0.5, sd_gamma=0.5, b=2.5, d=.1, bs=.01)
+contact_gamma_pars = c(c=.1, shed=.05, alpha=.1, gamma=.1, sd_c=0.05, sd_shed=0.025, 
+                       sd_alpha=0.5, sd_gamma=0.5, b=2.5, d=.1, bs=.01)
 
 
 
@@ -31,23 +33,40 @@ mclapply(seeds,
 
 ## no covariation
 source("GEM_SIR_cov_storage.R")
-mclapply(seeds, 
-         function(i) gillespie.SIR.cov_storage(tmax=20, 
+system.time(mclapply(floor(runif(10,1,1e5)), 
+         function(i) gillespie.SIR.cov_storage(tmax=100, 
                                                params=contact_alpha_pars, 
                                                corr=nocorr, 
-                                               initial_state, 
+                                               x=initial_state, 
                                                covParams=c('alpha','c'),
                                                seed=i),
-         mc.cores=4) -> example
+         mc.cores=10) -> out_nocov_alpha_contact)
+
+
 
 ## negative covariation
 mclapply(seeds, 
          function(i) gillespie.SIR.cov_storage(tmax=100, 
                                                params=contact_alpha_pars, 
                                                corr=negcorr, 
-                                               x=c(S=235,I=5,R=0), 
-                                               covParams=c('alpha','c')),
-         mc.cores=4) -> out_negcov_alpha_contact
+                                               x=initial_state, 
+                                               covParams=c('alpha','c'),
+                                               seed=i),
+         mc.cores=10) -> out_negcov_alpha_contact
+
+mclapply(seeds, 
+         function(i) gillespie.SIR.cov_storage(tmax=100, 
+                                               params=contact_alpha_pars, 
+                                               corr=negcorr, 
+                                               x=initial_state, 
+                                               covParams=c('gamma','c'),
+                                               seed=i),
+         mc.cores=10) -> out_negcov_gamma_contact
+
+
+plot.new()
+plot.window(xlim=c(0,100), ylim=c(0,235))
+axis(1);axis(2);box('plot')
 
 ## positive covariation
 mclapply(seeds, 
@@ -55,8 +74,35 @@ mclapply(seeds,
                                                params=contact_alpha_pars, 
                                                corr=poscorr, 
                                                initial_state, 
-                                               covParams=c('alpha','c')),
-         mc.cores=4) -> out_poscov_alpha_contact
+                                               covParams=c('alpha','c'),
+                                               seed=i),
+         mc.cores=10) -> out_poscov_alpha_contact
+
+
+plot.new()
+plot.window(xlim=c(0,100), ylim=c(0,235))
+axis(1);axis(2);box('plot')
+#lines(0:100, lapply(out_nocov_alpha_contact, function(l) l[[1]]$S) %>% do.call('cbind.data.frame', .) %>% apply(., 1, median), lwd=2)
+lines(0:100, lapply(out_negcov_alpha_contact, function(l) l[[1]]$S) %>% do.call('cbind.data.frame', .) %>% apply(., 1, median), col=2, lwd=2)
+lines(0:100, lapply(out_negcov_gamma_contact, function(l) l[[1]]$S) %>% do.call('cbind.data.frame', .) %>% apply(., 1, median), col=2, lwd=2, lty=2)
+#lines(0:100, lapply(out_poscov_alpha_contact, function(l) l[[1]]$S) %>% do.call('cbind.data.frame', .) %>% apply(., 1, median), col=4, lwd=2)
+
+sigma <- matrix(0,2,2)
+covParams=c('alpha','c')
+traitmeans=contact_alpha_pars[covParams]
+traitsds=contact_alpha_pars[paste('sd',covParams,sep="_")]
+sigma[1,1] = log(1 + traitsds[1]^2/traitmeans[1]^2);
+sigma[2,2] = log(1 + traitsds[2]^2/traitmeans[2]^2);
+NoCov <- sqrt(sigma)%*%nocorr%*%sqrt(sigma);
+PosCov <- sqrt(sigma)%*%poscorr%*%sqrt(sigma);
+NegCov <- sqrt(sigma)%*%negcorr%*%sqrt(sigma);
+
+## Analytical expectations
+NoCov[1,1]/(sum(contact_alpha_pars[c('alpha','gamma','d')])) - NoCov[1,2]/contact_alpha_pars['c']
+PosCov[1,1]/(sum(contact_alpha_pars[c('alpha','gamma','d')])) - PosCov[1,2]/contact_alpha_pars['c']
+NegCov[1,1]/(sum(contact_alpha_pars[c('alpha','gamma','d')])) - NegCov[1,2]/contact_alpha_pars['c']
+                                                                                          
+
 
 ### Format Output ###
 
