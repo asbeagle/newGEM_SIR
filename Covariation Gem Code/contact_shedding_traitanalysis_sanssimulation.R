@@ -111,9 +111,9 @@ c_shed_poscor_medvar$R0[c_shed_poscor_medvar$R0 >= 50] <-50
 colors<- c("Hi Var" = "darkblue", "Med Var"="darkgreen", "Low Var" = "pink")
 # no cov
 R0_nocor<-ggplot(c_shed_nocor_lowvar, aes(x=R0))+
-  geom_histogram(aes(color="Low Var"), fill = "pink", alpha= .4, binwidth = 2)+
-  geom_histogram(data=c_shed_nocor_medvar, aes(x=R0, color = "Med Var"), fill="darkgreen", binwidth = 2, alpha = .4)+
-  geom_histogram(data=c_shed_nocor_hivar, aes(x=R0, color = "Hi Var"),fill = "darkblue", binwidth = 2, alpha = .4)+
+  geom_histogram(aes(color="Low Var"), fill = "pink", alpha= .4, binwidth = .75)+
+  geom_histogram(data=c_shed_nocor_medvar, aes(x=R0, color = "Med Var"), fill="darkgreen", binwidth = .75, alpha = .4)+
+  geom_histogram(data=c_shed_nocor_hivar, aes(x=R0, color = "Hi Var"),fill = "darkblue", binwidth = .75, alpha = .4)+
   geom_vline(xintercept = R0, linetype="dotdash", color = "red", size=.5)+
   geom_vline(xintercept = c_shed_nocor_hivar_mean_R0, linetype="dotdash", color = "darkblue", size=.5)+
   geom_vline(xintercept = c_shed_nocor_lowvar_mean_R0, linetype="dotdash", color = "pink", size=.5)+
@@ -128,9 +128,9 @@ R0_nocor
 
 # pos cov
 R0_poscor<-ggplot(c_shed_poscor_lowvar, aes(x=R0))+
-  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = 2)+
-  geom_histogram(data=c_shed_poscor_medvar, aes(x=R0),binwidth = 2, alpha = .4, color="darkgreen", fill="darkgreen")+
-  geom_histogram(data=c_shed_poscor_hivar, aes(x=R0), binwidth = 2, alpha = .4, color="darkblue", fill="darkblue")+
+  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = .75)+
+  geom_histogram(data=c_shed_poscor_medvar, aes(x=R0),binwidth = .75, alpha = .4, color="darkgreen", fill="darkgreen")+
+  geom_histogram(data=c_shed_poscor_hivar, aes(x=R0), binwidth = .75, alpha = .4, color="darkblue", fill="darkblue")+
   geom_vline(xintercept = R0, linetype="dotdash", color = "red", size=.5)+
   geom_vline(xintercept = c_shed_poscor_hivar_mean_R0, linetype="dotdash", color = "darkblue", size=.5)+
   geom_vline(xintercept = c_shed_poscor_lowvar_mean_R0, linetype="dotdash", color = "pink", size=.5)+
@@ -138,12 +138,13 @@ R0_poscor<-ggplot(c_shed_poscor_lowvar, aes(x=R0))+
   labs(title="c-shed-poscor")+
   scale_x_continuous(breaks=c(seq(0, 50, by=5)), labels=c(seq(0,45, by=5),"50+"))+
   ylim(0, 800)
+R0_poscor
 
 # neg cov
 R0_negcor<-ggplot(c_shed_negcor_lowvar, aes(x=R0))+
-  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = 2)+
-  geom_histogram(data=c_shed_negcor_medvar, aes(x=R0), binwidth = 2, alpha = .4, color="darkgreen", fill="darkgreen")+
-  geom_histogram(data=c_shed_negcor_hivar, aes(x=R0), binwidth = 2, alpha = .4, color="darkblue", fill="darkblue")+
+  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = .75)+
+  geom_histogram(data=c_shed_negcor_medvar, aes(x=R0), binwidth = .75, alpha = .4, color="darkgreen", fill="darkgreen")+
+  geom_histogram(data=c_shed_negcor_hivar, aes(x=R0), binwidth = .75, alpha = .4, color="darkblue", fill="darkblue")+
   geom_vline(xintercept = R0, linetype="dotdash", color = "red", size=.5)+
   geom_vline(xintercept = c_shed_negcor_hivar_mean_R0, linetype="dotdash", color = "darkblue", size=.5)+
   geom_vline(xintercept = c_shed_negcor_lowvar_mean_R0, linetype="dotdash", color = "pink", size=.5)+
@@ -151,6 +152,7 @@ R0_negcor<-ggplot(c_shed_negcor_lowvar, aes(x=R0))+
   labs(title="c-shed-negcor")+
   scale_x_continuous(breaks=c(seq(0, 50, by=5)), labels=c(seq(0,45, by=5),"50+"))+
   ylim(0, 800)
+R0_negcor
 
 ggarrange(R0_nocor, R0_poscor, R0_negcor, ncol=3, nrow=1, common.legend = TRUE, legend="right")
 
