@@ -1,5 +1,4 @@
-library(tidyverse
-        )
+library(tidyverse)
 
 SC_hivar_c <- array(NA, dim=c(length(timeSeq), length(out_negcorr_hivar_c_shed)+1))
 SC_hivar_c[,1] <- timeSeq
@@ -39,6 +38,7 @@ store_maxc<-vector(mode='list', 50)
 for (i in 1:length(out_negcorr_hivar_c_shed)) {
   store_maxc[[i]]<-max(out_negcorr_hivar_c_shed[[i]][[2]]$c,na.rm=T)
 }
+
 
 
 plot(unlist(store_c)*unlist(store_shed)/(1+unlist(store_shed)), unlist(store_numInf), xlim=c(0,0.1))
@@ -191,78 +191,8 @@ hist(unlist(store_c_hivar_nocor), breaks=breaks, main="highvar-c-shed-nocorr", x
 hist(unlist(store_s_hivar_nocor), breaks=breaks, main="highvar-c-shed-nocorr", xlab="shed",xlim=c(0,2.5), ylim=c(0,45))
 
 
-par(mfrow=c(1,1))
 
-hist(out_negcorr_hivar_c_shed[[20]][[2]]$shed, xlim=c(0,1), ylim=c(0,40), breaks=breaks)
-hist(out_negcorr_hivar_c_shed[[20]][[2]]$c, xlim=c(0,1), ylim=c(0,40),breaks=breaks)
 
-hist(out_negcorr_lowvar_c_shed[[20]][[2]]$shed, xlim=c(0,1), breaks=breaks)
-hist(out_negcorr_lowvar_c_shed[[20]][[2]]$c, xlim=c(0,1),breaks=breaks)
-
-hist(out_negcorr_medvar_c_shed[[20]][[2]]$shed, xlim=c(0,1), breaks=breaks)
-hist(out_negcorr_medvar_c_shed[[20]][[2]]$c, xlim=c(0,1),breaks=breaks)
-
-##pos corr
-hist(out_poscorr_hivar_c_shed[[20]][[2]]$shed,breaks=seq(from=0,to=7, by=0.1))
-hist(out_poscorr_hivar_c_shed[[20]][[2]]$c)
-
-hist(out_poscorr_medvar_c_shed[[20]][[2]]$shed)
-hist(out_poscorr_medvar_c_shed[[20]][[2]]$c)
-
-hist(out_poscorr_lowvar_c_shed[[20]][[2]]$shed)
-hist(out_poscorr_lowvar_c_shed[[20]][[2]]$c)
-
-##no cor
-hist(out_nocorr_hivar_c_shed[[10]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[11]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[12]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[13]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[14]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[15]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[16]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[17]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[18]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[19]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[20]][[2]]$c)
-hist(out_nocorr_hivar_c_shed[[20]][[2]]$shed)
-
-hist(out_negcorr_hivar_c_shed[[20]][[2]]$c)
-hist(out_negcorr_hivar_c_shed[[20]][[2]]$shed)
-
-hist(out_poscorr_hivar_c_shed[[20]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[20]][[2]]$shed)
-
-hist(out_nocorr_lowvar_c_shed[[10]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[11]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[12]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[13]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[14]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[15]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[16]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[17]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[18]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[19]][[2]]$c)
-hist(out_nocorr_lowvar_c_shed[[20]][[2]]$c)
-
-hist(out_poscorr_hivar_c_shed[[10]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[11]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[12]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[13]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[14]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[15]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[16]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[17]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[18]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[19]][[2]]$c)
-hist(out_poscorr_hivar_c_shed[[20]][[2]]$c)
-
-#### covariation contact and virulence alpha
-hist(out_poscorr_hivar_c_alpha[[20]][[2]]$c)
-hist(out_poscorr_hivar_c_alpha[[19]][[2]]$c)
-hist(out_poscorr_hivar_c_alpha[[18]][[2]]$c)
-hist(out_poscorr_hivar_c_alpha[[17]][[2]]$c)
-hist(out_poscorr_hivar_c_alpha[[16]][[2]]$c)
-hist(out_poscorr_hivar_c_alpha[[16]][[2]]$c)
 
 
 
