@@ -151,7 +151,7 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
   colnames(popSizes) <- c('t','S','I','R')
   ## Trim this down to store the population sizes at particular points in time (for now, just every timestep)
   ## Find the population sizes just before timepoint 1, 2, 3, etc. and store those
-  popSizes <- popSizes[c(1,sapply(1:tmax, function(T) max(which(popSizes$t < T)))),]
+  popSizes <- popSizes[c(1,sapply(1:floor(t), function(T) max(which(popSizes$t < T)))),] # change so it stops keeping pop sizes once I is 0
   ## Trim the blank row from storage
   storage <- storage[1:ID,]
   results <- list(popSizes, storage)

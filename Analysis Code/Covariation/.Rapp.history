@@ -1,0 +1,2 @@
+load("/Users/alexisbeagle/newGEM_SIR/Analysis Code/Covariation/out_negcorr_hivar_c_shed.RDS")
+load("/Users/alexisbeagle/newGEM_SIR/Analysis Code/Covariation/out_negcorr_lowvar_c_shed.RDS")
