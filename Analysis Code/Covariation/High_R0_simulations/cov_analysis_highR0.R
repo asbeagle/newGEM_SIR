@@ -1,0 +1,69 @@
+source("GEM_SIR_cov_storage.R")
+library(tidyverse)
+library(parallel)
+
+## set up
+set.seed(123432)
+seeds <- floor(runif(50,1,1e5)) # set seeds
+
+nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
+negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
+poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+
+hivar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+             sd_c=0.75, sd_shed=0.5, sd_alpha=0.75, sd_gamma=0.75, 
+             b=2.5, d=.1, bs=.01)
+medvar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+              sd_c=0.15, sd_shed=0.1, sd_alpha=0.15, sd_gamma=0.15, 
+              b=2.5, d=.1, bs=.01)
+lowvar = c(   c=0.15,     shed=0.1,    alpha=0.15,     gamma=0.15, 
+              sd_c=0.03, sd_shed=0.02, sd_alpha=0.03, sd_gamma=0.03, 
+              b=2.5, d=.1, bs=.01)
+
+initial_state <- floor(c(S=unname(((hivar["b"]-hivar["d"])/hivar["bs"]))-5, I=5, R=0))
+
+var1=c('c','c','c','shed','shed','alpha')
+var2=c('shed','alpha','gamma','alpha','gamma','gamma')
+
+for (j in 1:6) { ## loop over the six different covariance combinations
+  for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+    for (varLevel in c("hivar","medvar","lowvar")) {
+      print(paste("out",covMatrix,varLevel,var1[j],var2[j],sep="_"))
+      mclapply(seeds, 
+               function(i) gillespie.SIR.cov_storage(tmax=100, 
+                                                     params=get(varLevel), 
+                                                     corr=get(covMatrix), 
+                                                     x=initial_state, 
+                                                     covParams=c(var1[j],var2[j]),
+                                                     seed=i),
+               mc.cores=10) -> z
+      saveRDS(z, file=paste0(paste("out",covMatrix,varLevel,var1[j],var2[j],sep="_"),".RDS"))
+    }
+  }
+}
+
+
+# ## Plot median trajectories of S (expected equilibrium with no variation is S=63)
+# png(filename="~/Desktop/Covariance_results.png", height=10, width=5, units='in', res=600)
+# par(mfrow=c(6,3), mar=c(1,1,1,1), oma=c(3,3,0,0))
+# for (j in 1:6) { ## loop over the six different covariance combinations
+#   for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+#       plot.new()
+#       plot.window(xlim=c(0,100), ylim=c(0,235))
+#       axis(1); axis(2); box('plot')
+#       z1 = get(paste("out",covMatrix,"hivar",var1[j],var2[j],sep="_"))
+#       z2 = get(paste("out",covMatrix,"medvar",var1[j],var2[j],sep="_"))
+#       z3 = get(paste("out",covMatrix,"lowvar",var1[j],var2[j],sep="_"))
+#       abline(h=63, lty=2)
+#       lines(0:100, lapply(z1, function(l) l[[1]]$S) %>% do.call("cbind.data.frame",.) %>% apply(., 1, median), lwd=2)
+#       lines(0:100, lapply(z2, function(l) l[[1]]$S) %>% do.call("cbind.data.frame",.) %>% apply(., 1, median), lwd=2, col=4)
+#       lines(0:100, lapply(z3, function(l) l[[1]]$S) %>% do.call("cbind.data.frame",.) %>% apply(., 1, median), lwd=2, col=2)
+#       legend(x='topright', paste(var1[j], var2[j], covMatrix, sep='-'), bty='n')
+#   }
+# }
+# dev.off()
+# 
+#     
+
+
+
