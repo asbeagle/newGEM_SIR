@@ -1,6 +1,42 @@
 ## shed gamma
+library(tidyverse)
 
-## shed gamma
+for(corr in c("poscorr","nocorr","negcorr")) {
+  for (var in c("hi","med","low")) {
+    data <- readRDS(paste0("out_",corr,"_",var,"var_c_alpha.RDS"))
+    lapply(data, function(d)
+      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+                 Corr = corr,
+                 Var = var)) -> sumdata
+    }
+}
+
+
+sumdata_use<-do.call("rbind.data.frame", sumdata)
+
+for (var in c("low","med","hi")) {
+  for (corr in c("no","neg","pos")) {
+    data <- readRDS(paste0("out_",corr,"corr_",var,"var_c_shed.RDS"))
+    lapply(data, function(d)
+      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+                 Corr = as.factor(corr),
+                 Var = as.factor(var)))  -> sumdata1
+  }
+}
+
+sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
+
+shed_gamma_frac0<-rbind(sumdata_use,sumdata_use1)
+
+sumdata_use %>%
+  group_by(Corr,Var)
+
+sumdata$Corr <-factor(sumdata)
+
+
+ggplot(data = sumdata, mapping = aes(x=Var, y=frac0Reff))+
+  geom_point()
+
 
 ## no covariation
 # hi var
@@ -12,7 +48,8 @@ all_inf<-lapply(shed_gamma_nocorr_hi, function(x) x[x != 0 & !is.na(x)])
 
 length(unlist(shed_gamma_nocorr_hi))
 length(unlist(all_inf))
-1-(length(unlist(all_inf))/length(unlist(shed_gamma_nocorr_hi)))
+
+shed_gamma_secinf_nocorr_hi <- 1-(length(unlist(all_inf))/length(unlist(shed_gamma_nocorr_hi)))
 
 mean(unlist(all_inf))
 median(unlist(all_inf))
