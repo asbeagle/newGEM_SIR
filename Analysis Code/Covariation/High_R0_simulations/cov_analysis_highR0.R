@@ -13,6 +13,7 @@ poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 hivar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
              sd_c=0.75, sd_shed=0.5, sd_alpha=0.75, sd_gamma=0.75, 
              b=2.5, d=.1, bs=.01)
+
 medvar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
               sd_c=0.15, sd_shed=0.1, sd_alpha=0.15, sd_gamma=0.15, 
               b=2.5, d=.1, bs=.01)
@@ -42,7 +43,70 @@ for (j in 1:6) { ## loop over the six different covariance combinations
   }
 }
 
+## To create an equivalent plot to the one below, just in ggplot, use the following code
+var1=c('c','c','c','shed','shed','alpha')
+var2=c('shed','alpha','gamma','alpha','gamma','gamma')
+i <- 1
+data <- vector(mode='list', length=18)
+for (j in 1:6) { ## loop over the six different covariance combinations
+  for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+    z1 = readRDS(paste0(paste("out",covMatrix,"hivar",var1[j],var2[j],sep="_"),".RDS"))
+    z2 = readRDS(paste0(paste("out",covMatrix,"medvar",var1[j],var2[j],sep="_"),".RDS"))
+    z3 = readRDS(paste0(paste("out",covMatrix,"lowvar",var1[j],var2[j],sep="_"),".RDS"))
+    
+    ## Give a nicer name to covMatrix
+    covMatrix <- switch(covMatrix,poscorr="(+) Cov",negcorr="(-) Cov",nocorr="(0) Cov")
+    
+    z <- vector(mode='list',length=3)
+    lapply(1:length(z1), function(i) mutate(z1[[i]][[1]], rep=i, t=round(t))) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
+    lapply(1:length(z2), function(i) mutate(z2[[i]][[1]], rep=i, t=round(t))) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
+    lapply(1:length(z3), function(i) mutate(z3[[i]][[1]], rep=i, t=round(t))) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="low",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[3]]
+    data[[i]] <- do.call("rbind.data.frame",z)
+    i <- i+1
+  }
+}
+data <- do.call("rbind.data.frame",data)
+saveRDS(data, file="population_dynamics_all_simulations.RDS")    
 
+## To plot the dynamics of S across all trait pairs, covariance structures, and variance levels 
+ggplot(data, aes(x=t, y=S, group=rep)) +
+  stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, fun.args=list(conf.int=0.95)) +
+  stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
+  facet_grid(traits~cov) + 
+  ylim(0,50) + 
+  theme_bw()
+
+## To break out a particular trait pair
+ggplot(subset(data, traits="c-gamma"), aes(x=t, y=S, group=rep)) +
+  stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, fun.args=list(conf.int=0.95)) +
+  stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
+  facet_grid(.~cov) + 
+  ylim(0,50) + 
+  theme_bw()
+
+ggplot(subset(data, traits%in%c("c-gamma","c-alpha")), aes(x=t, y=S, group=rep)) +
+  stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, fun.args=list(conf.int=0.95)) +
+  stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
+  facet_grid(cov~traits) + 
+  ylim(0,50) + 
+  theme_bw()
+
+ggplot(subset(data, traits%in%c("c-gamma","c-alpha")), aes(x=t, y=I, group=rep)) +
+  stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, fun.args=list(conf.int=0.95)) +
+  stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
+  facet_grid(cov~traits) + 
+  theme_bw()
+
+
+    
+
+    
 # ## Plot median trajectories of S (expected equilibrium with no variation is S=63)
 # png(filename="~/Desktop/Covariance_results.png", height=10, width=5, units='in', res=600)
 # par(mfrow=c(6,3), mar=c(1,1,1,1), oma=c(3,3,0,0))
