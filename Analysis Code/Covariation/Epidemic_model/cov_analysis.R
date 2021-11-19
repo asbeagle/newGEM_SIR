@@ -4,7 +4,7 @@ library(parallel)
 
 ## set up
 set.seed(123432)
-seeds <- floor(runif(50,1,1e5)) # set seeds
+seeds <- floor(runif(100,1,1e5)) # set seeds
 
 nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
