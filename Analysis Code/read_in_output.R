@@ -15,6 +15,7 @@ out_nocorr_lowvar_alpha_gamma <- readRDS("out_negcorr_lowvar_alpha_gamma.RDS")
 out_poscorr_lowvar_alpha_gamma <- readRDS("out_poscorr_lowvar_alpha_gamma.RDS")
 
 ## contact alpha
+
 # hi var
 out_negcorr_hivar_c_alpha <- readRDS("out_negcorr_hivar_c_alpha.RDS")
 out_nocorr_hivar_c_alpha <- readRDS("out_nocorr_hivar_c_alpha.RDS")
