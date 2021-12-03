@@ -3,40 +3,84 @@
 ## shed gamma
 # hi var
 # pos
+i <- 1
+sumdata1 <- vector(mode='list')
 for (var in c("low","med","hi")) {
   for (corr in c("no","neg","pos")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
-    lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+    lapply(1:length(data), function(d)
+      data.frame(R=subset(data[[d]][[2]], tInf < data[[d]][[1]]$t[max(which(data[[d]][[1]]$S > 0.75*235))])$numInf,
+                 epiSpeed=data[[d]][[1]]$t[max(which(data[[d]][[1]]$S > 0.75*235))],
                  Corr = as.factor(corr),
-                 Var = as.factor(var)))  -> sumdata1
+                 Var = as.factor(var),
+                 Rep = d)) %>% do.call("rbind.data.frame",.) -> sumdata1[[i]]
+    i <- i+1
   }
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
+
+
+sumdata_use1 %>% group_by(Corr, Var) %>% summarise(meanR = mean(R), varR=var(R), fracSS=sum(R>(mean(R)+2*sd(R)))/length(R), 
+                                                   fracSDS=sum(R>(mean(R)+4*sd(R)))/length(R), frac0=sum(R==0)/length(R),
+                                                   meanSpeed=mean(epiSpeed)) -> sumtable
+
+ggplot(sumtable, aes(x=frac0, y=meanR))+
+  geom_point(data=sumtable, aes(color=Var, shape=Var), alpha = .85, size = 3.5)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(title="shed-gamma")+
+  labs(x = "% 0 Reff", y = "mean Reff")
+  
+
+
+with(sumtable, plot(frac0, varR))
+with(sumtable, plot(fracSS, varR))
+with(sumtable, plot(fracSDS, varR))
+
+
+
+with(sumtable, plot(fracSDS, frac0))
+with(sumtable, plot(fracSS, frac0))
+
+with(sumtable, plot(fracSDS, meanR))
+
+
+with(sumtable, plot(fracSS, frac0))
+
+
 
 # neg
 for (var in c("low","med","hi")) {
   for (corr in c("no","pos","neg")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata2
   }
 }
 sumdata_use2 <-do.call("rbind.data.frame", sumdata2)
 
+sumdata_use2 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use2
+
 # no
 for (var in c("low","med","hi")) {
   for (corr in c("pos","neg","no")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata3
   }
 }
 sumdata_use3 <-do.call("rbind.data.frame", sumdata3)
+
+sumdata_use3 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use3
 
 ## med var
 # pos
@@ -44,36 +88,52 @@ for (var in c("low","hi","med")) {
   for (corr in c("no","neg","pos")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata4
   }
 }
 sumdata_use4 <-do.call("rbind.data.frame", sumdata4)
 
+sumdata_use4 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use4
+
 # neg
 for (var in c("low","hi","med")) {
   for (corr in c("no","pos","neg")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata5
   }
 }
 sumdata_use5 <-do.call("rbind.data.frame", sumdata5)
 
+sumdata_use5 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use5
+
 # no
 for (var in c("low","hi","med")) {
   for (corr in c("pos","neg","no")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata6
   }
 }
 sumdata_use6 <-do.call("rbind.data.frame", sumdata6)
+
+sumdata_use6 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use6
+
 
 ## low var
 # pos
@@ -81,36 +141,55 @@ for (var in c("hi","med","low")) {
   for (corr in c("no","neg","pos")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata7
   }
 }
 sumdata_use7 <-do.call("rbind.data.frame", sumdata7)
 
+sumdata_use7 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use7
+
 # neg
 for (var in c("hi","med","low")) {
   for (corr in c("no","pos","neg")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata8
   }
 }
 sumdata_use8 <-do.call("rbind.data.frame", sumdata8)
 
+sumdata_use8 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use8
+
 # no
 for (var in c("hi","med","low")) {
   for (corr in c("pos","neg","no")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(data, function(d)
-      data.frame(frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
+      data.frame(R=d[[2]]$numInf,
+                 frac0Reff= sum(d[[2]]$numInf==0)/nrow(d[[2]]),
                  Corr = as.factor(corr),
                  Var = as.factor(var)))  -> sumdata9
   }
 }
 sumdata_use9 <-do.call("rbind.data.frame", sumdata9)
+
+sumdata_use9 %>% 
+  mutate(R = mean(R), frac0Reff = mean(frac0Reff))%>%
+  distinct(.)-> sumdata_use9
+
+shed_gamma_data <-rbind(sumdata_use1,sumdata_use2,sumdata_use3,
+                        sumdata_use4,sumdata_use5,sumdata_use6,
+                        sumdata_use7,sumdata_use8,sumdata_use9)
 
 frac0_shed_gamma <- rbind(sumdata_use1,sumdata_use2,sumdata_use3,sumdata_use4,sumdata_use5,sumdata_use6,sumdata_use7,sumdata_use8,sumdata_use9)
 
@@ -120,3 +199,12 @@ shed_gamma<-ggplot(data=frac0_shed_gamma, mapping = aes(x=Corr, y = frac0Reff))+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   labs(title = "Shed-Gamma", y = "% no secondary infections")+
   scale_x_discrete(limits=c("no", "neg","pos"))
+
+shed_gamma<- ggplot(shed_gamma_data, mapping = aes(x=frac0Reff, y=R))+
+  geom_point(aes(color=Var, shape = Corr), size=4, alpha = .85)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(title="shed-gamma")+
+  labs(x = "mean % 0 Reff", y = "mean Reff")+
+  theme_bw()
+
+shed_gamma

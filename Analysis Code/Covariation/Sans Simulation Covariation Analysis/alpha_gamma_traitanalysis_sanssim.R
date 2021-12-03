@@ -7,6 +7,7 @@ nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 
+## med R0 parms
 hivar = c(   c=0.1,    shed=0.05,    alpha=0.1,    gamma=0.1, 
              sd_c=0.5, sd_shed=0.25, sd_alpha=0.5, sd_gamma=0.5, 
              b=2.5, d=.1, bs=.01)
@@ -17,6 +18,31 @@ lowvar = c(   c=0.1,     shed=0.05,    alpha=0.1,     gamma=0.1,
               sd_c=0.02, sd_shed=0.01, sd_alpha=0.02, sd_gamma=0.02, 
               b=2.5, d=.1, bs=.01)
 
+# high R0 parms
+hivar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+             sd_c=0.75, sd_shed=0.5, sd_alpha=0.75, sd_gamma=0.75, 
+             b=2.5, d=.1, bs=.01)
+medvar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+              sd_c=0.15, sd_shed=0.1, sd_alpha=0.15, sd_gamma=0.15, 
+              b=2.5, d=.1, bs=.01)
+lowvar = c(   c=0.15,     shed=0.1,    alpha=0.15,     gamma=0.15, 
+              sd_c=0.03, sd_shed=0.02, sd_alpha=0.03, sd_gamma=0.03, 
+              b=2.5, d=.1, bs=.01)
+R0 = 8
+
+
+# low R0 parms
+hivar = c(   c=0.1,    shed=0.02,    alpha=0.1,    gamma=0.1, 
+             sd_c=0.5, sd_shed=0.1, sd_alpha=0.5, sd_gamma=0.5, 
+             b=2.5, d=.1, bs=.01)
+medvar = c(   c=0.1,    shed=0.02,    alpha=0.1,    gamma=0.1, 
+              sd_c=0.1, sd_shed=0.02, sd_alpha=0.1, sd_gamma=0.1, 
+              b=2.5, d=.1, bs=.01)
+lowvar = c(   c=0.1,     shed=0.02,    alpha=0.1,     gamma=0.1, 
+              sd_c=0.02, sd_shed=0.004, sd_alpha=0.02, sd_gamma=0.02, 
+              b=2.5, d=.1, bs=.01)
+
+R0 = 1.5
 
 ## high var
 #no cor
@@ -100,6 +126,7 @@ alpha_gamma_negcor_hivar$R0[alpha_gamma_negcor_hivar$R0 >= 50] <- 50
 alpha_gamma_negcor_medvar$R0[alpha_gamma_negcor_medvar$R0 >= 50] <-50
 
 ## R0 distrubution plots
+
 # no cov
 R0_nocor<-ggplot(alpha_gamma_nocor_lowvar, aes(x=R0))+
   geom_histogram(aes(color="Low Var"), fill = "pink", alpha= .4, binwidth = .5)+
