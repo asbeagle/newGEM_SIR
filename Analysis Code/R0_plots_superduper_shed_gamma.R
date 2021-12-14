@@ -1,5 +1,7 @@
 ### plots with all levels of R0
 
+library(tidyverse)
+
 ## low R0
 ## hi var
 ## shed gamma
