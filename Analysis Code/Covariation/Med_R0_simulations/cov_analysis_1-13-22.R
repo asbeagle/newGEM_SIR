@@ -43,6 +43,62 @@ for (j in 1:6) { ## loop over the six different covariance combinations
 }
   
 
+var1=c('c','c','c','shed','shed','alpha')
+var2=c('shed','alpha','gamma','alpha','gamma','gamma')
+
+data <- vector(mode='list', length=54)
+i <- 1
+for (j in 1:6) { ## loop over the six different covariance combinations
+  for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+    for (varLevel in c("hivar","medvar","lowvar")) {
+      out <- readRDS(paste0(paste("out",covMatrix,varLevel,var1[j],var2[j],sep="_"),".RDS"))
+      data.frame(traits=rep(paste(var1[j],var2[j],sep='-'),50),
+                 cov=rep(covMatrix,50),
+                 var=rep(varLevel,50),
+                 top20=unlist(lapply(out, function(o) sum(sort(o[[2]]$numInf)[round(0.8*nrow(o[[2]])):nrow(o[[2]])])/sum(o[[2]]$numInf))),
+                 meanI=unlist(lapply(out, function(o) mean(tail(o[[1]]$I,20)))),
+                 maxI=unlist(lapply(out, function(o) max(o[[1]]$I))),
+                 medNumInfTop20=unlist(lapply(out, function(o) median(sort(o[[2]]$numInf)[round(0.8*nrow(o[[2]])):nrow(o[[2]])]))),
+                 meanNumInfTop20=unlist(lapply(out, function(o) mean(sort(o[[2]]$numInf)[round(0.8*nrow(o[[2]])):nrow(o[[2]])]))),
+                 sdNumInfTop20=unlist(lapply(out, function(o) sd(sort(o[[2]]$numInf)[round(0.8*nrow(o[[2]])):nrow(o[[2]])]))),
+                 maxNumInf=unlist(lapply(out, function(o) log(max(sort(o[[2]]$numInf)[round(0.8*nrow(o[[2]])):nrow(o[[2]])])))),
+                 peakTime=unlist(lapply(out, function(o) which.max(o[[1]]$I)-1))
+                 ) -> data[[i]]
+      i <- i + 1
+    }
+  }
+}
+data <- do.call("rbind.data.frame",data)
+
+## Epidemiological dynamics in general
+## This figure is interesting - shows that *having* traits covary affects the peak size of the epidemic but the *direction* of the covariance doesn't actually matter
+ggplot(subset(data, meanI>10), aes(x=var,y=maxI,shape=cov,colour=cov)) + 
+  geom_boxplot() + 
+  facet_wrap(~traits)
+
+
+## Super-spreading figures 
+## This one shows the fraction of total cases caused by the top 20% of spreaders
+ggplot(subset(data, meanI>10), aes(x=var,y=top20,shape=cov,colour=cov)) + 
+  geom_boxplot() + 
+  facet_wrap(~traits)
+## This one shows the mean number of infections caused by the individuals in the top 20% of spreaders
+ggplot(subset(data, meanI>10), aes(x=var,y=meanNumInfTop20,shape=cov,colour=cov)) + 
+  geom_boxplot() + 
+  facet_wrap(~traits)
+
+
+## Effect of super-spreading on epidemiological dynamics
+ggplot(subset(data, meanI>10), aes(x=meanNumInfTop20,y=maxI,group=var,shape=var)) + 
+  geom_point(aes(colour=cov)) + 
+  facet_wrap(~traits)
+
+ggplot(subset(data, meanI>10), aes(x=top20,y=meanI,group=var,shape=var)) + 
+  geom_point(aes(colour=cov)) + 
+  facet_wrap(~traits)
+
+
+
 # ## Plot median trajectories of S (expected equilibrium with no variation is S=63)
 # png(filename="~/Desktop/Covariance_results.png", height=10, width=5, units='in', res=600)
 # par(mfrow=c(6,3), mar=c(1,1,1,1), oma=c(3,3,0,0))
