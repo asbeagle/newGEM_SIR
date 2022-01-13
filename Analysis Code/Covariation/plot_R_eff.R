@@ -1,23 +1,23 @@
-### contact and shedding
 ## get data frame with all variance level and corr
 library(tidyverse)
 library(ggplot2)
 
-
+## contact shed
 oo <- vector(mode='list', length=9)
 i <- 1
 for (var in c("low","med","hi")) {
   for (corr in c("no","neg","pos")) {
-    dataName <- paste0("out_",corr,"corr_",var,"var_c_shed")
-    oo[[i]] <- data.frame(R=lapply(get(dataName), function(l) l[[2]]$numInf==0) %>% unlist,
+    dataName <- paste0("out_",corr,"corr_",var,"var_c_alpha")
+    oo[[i]] <- data.frame(R=lapply(get(dataName), function(l) l[[2]]$numInf) %>% unlist,
                           Var=var,
-                          Corr=corr)
+                          Corr=corr
+    )
     i <- i + 1
   }
 }
-ooo <- do.call("rbind.data.frame", oo)
+ooo_c_shed <- do.call("rbind.data.frame", oo)
 
-ooo$Var <- factor(ooo$Var, levels = c("low", "med", "hi"))
+ooo_c_shed$Var <- factor(ooo_c_shed$Var, levels = c("low", "med", "hi"))
 
 ggplot(data=ooo, mapping = aes(x=Var, y= (length(R==0))/(length(R))))+
   geom_point(data=ooo, color=Corr)
@@ -38,13 +38,15 @@ p<-ggplot(data=ooo, mapping=aes(x=Corr, y=log(R+1)))+
   geom_hline(yintercept = log(2), linetype = "dotdash", color = "black", alpha = .8)
 p
 
-ooo %>%
+ooo_c_shed %>%
   group_by(Corr,Var)%>%
-  summarize(mean=mean(R),var=var(R))-> ooo2
+  summarise(mean=mean(R),
+            var=var(R), 
+            meanfrac0=length(which(ooo_c_shed$R==0))/length(ooo_c_shed$R))-> ooo_c_shed2
 
-ooo %>%
+ooo_c_shed %>%
   group_by(Corr,Var)%>%
-  summarize(frac0= (length(which(ooo$R==0)))/(length(ooo$R)))-> ooo2
+  summarise(meanfrac0= mean((length(which(ooo$R==0)))/(length(ooo$R))))-> ooo_c_shed2
 
 # contact alpha
 ## get data frame with all variance level and corr
@@ -55,15 +57,12 @@ for (var in c("low","med","hi")) {
     dataName <- paste0("out_",corr,"corr_",var,"var_c_alpha")
     oo[[i]] <- data.frame(R=lapply(get(dataName), function(l) l[[2]]$numInf) %>% unlist,
                           Var=var,
-                          Corr=corr,
-                          R_0 = lapply(get(dataName), function(l) length(l[[2]]$numInf==0) %>% unlist))
+                          Corr=corr
+                          )
     i <- i + 1
   }
 }
 ooo <- do.call("rbind.data.frame", oo)
-
-
-    
 
 ooo$Var <- factor(ooo$Var, levels = c("low", "med", "hi"))
 

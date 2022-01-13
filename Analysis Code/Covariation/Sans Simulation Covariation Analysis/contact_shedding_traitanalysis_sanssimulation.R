@@ -9,6 +9,7 @@ nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
 negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
 poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
 
+# med R0 parms
 hivar = c(   c=0.1,    shed=0.05,    alpha=0.1,    gamma=0.1, 
              sd_c=0.5, sd_shed=0.25, sd_alpha=0.5, sd_gamma=0.5, 
              b=2.5, d=.1, bs=.01)
@@ -17,6 +18,31 @@ medvar = c(   c=0.1,    shed=0.05,    alpha=0.1,    gamma=0.1,
               b=2.5, d=.1, bs=.01)
 lowvar = c(   c=0.1,     shed=0.05,    alpha=0.1,     gamma=0.1, 
               sd_c=0.02, sd_shed=0.01, sd_alpha=0.02, sd_gamma=0.02, 
+              b=2.5, d=.1, bs=.01)
+
+# high R0 parms
+hivar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+             sd_c=0.75, sd_shed=0.5, sd_alpha=0.75, sd_gamma=0.75, 
+             b=2.5, d=.1, bs=.01)
+medvar = c(   c=0.15,    shed=0.1,    alpha=0.15,    gamma=0.15, 
+              sd_c=0.15, sd_shed=0.1, sd_alpha=0.15, sd_gamma=0.15, 
+              b=2.5, d=.1, bs=.01)
+lowvar = c(   c=0.15,     shed=0.1,    alpha=0.15,     gamma=0.15, 
+              sd_c=0.03, sd_shed=0.02, sd_alpha=0.03, sd_gamma=0.03, 
+              b=2.5, d=.1, bs=.01)
+
+R0 = 235*((((hivar["shed"]/(1+hivar["shed"]))*hivar["c"])/(hivar["alpha"]+hivar["gamma"]+hivar["d"])))
+
+
+# low R0 parms
+hivar = c(   c=0.1,    shed=0.02,    alpha=0.1,    gamma=0.1, 
+             sd_c=0.5, sd_shed=0.1, sd_alpha=0.5, sd_gamma=0.5, 
+             b=2.5, d=.1, bs=.01)
+medvar = c(   c=0.1,    shed=0.02,    alpha=0.1,    gamma=0.1, 
+              sd_c=0.1, sd_shed=0.02, sd_alpha=0.1, sd_gamma=0.1, 
+              b=2.5, d=.1, bs=.01)
+lowvar = c(   c=0.1,     shed=0.02,    alpha=0.1,     gamma=0.1, 
+              sd_c=0.02, sd_shed=0.004, sd_alpha=0.02, sd_gamma=0.02, 
               b=2.5, d=.1, bs=.01)
 
 R0 = 235*((((hivar["shed"]/(1+hivar["shed"]))*hivar["c"])/(hivar["alpha"]+hivar["gamma"]+hivar["d"])))
@@ -142,9 +168,9 @@ R0_poscor
 
 # neg cov
 R0_negcor<-ggplot(c_shed_negcor_lowvar, aes(x=R0))+
-  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = .75)+
-  geom_histogram(data=c_shed_negcor_medvar, aes(x=R0), binwidth = .75, alpha = .4, color="darkgreen", fill="darkgreen")+
-  geom_histogram(data=c_shed_negcor_hivar, aes(x=R0), binwidth = .75, alpha = .4, color="darkblue", fill="darkblue")+
+  geom_histogram(color="pink", fill="pink", alpha= .4, binwidth = .55)+
+  geom_histogram(data=c_shed_negcor_medvar, aes(x=R0), binwidth = .55, alpha = .4, color="darkgreen", fill="darkgreen")+
+  geom_histogram(data=c_shed_negcor_hivar, aes(x=R0), binwidth = .55, alpha = .4, color="darkblue", fill="darkblue")+
   geom_vline(xintercept = R0, linetype="dotdash", color = "red", size=.5)+
   geom_vline(xintercept = c_shed_negcor_hivar_mean_R0, linetype="dotdash", color = "darkblue", size=.5)+
   geom_vline(xintercept = c_shed_negcor_lowvar_mean_R0, linetype="dotdash", color = "pink", size=.5)+
