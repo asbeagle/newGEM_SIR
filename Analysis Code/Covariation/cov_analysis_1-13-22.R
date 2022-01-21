@@ -1,6 +1,8 @@
 source("GEM_SIR_cov_storage.R")
 library(tidyverse)
 library(parallel)
+library(ggplot2)
+library(ggpubr)
 
 ## set up
 set.seed(123432)
@@ -70,22 +72,37 @@ for (j in 1:6) { ## loop over the six different covariance combinations
 }
 data <- do.call("rbind.data.frame",data)
 
+data$var<- factor(data$var, levels = c("lowvar", "medvar", "hivar"))
+
 ## Epidemiological dynamics in general
 ## This figure is interesting - shows that *having* traits covary affects the peak size of the epidemic but the *direction* of the covariance doesn't actually matter
 ggplot(subset(data, meanI>10), aes(x=var,y=maxI,shape=cov,colour=cov)) + 
   geom_boxplot() + 
-  facet_wrap(~traits)
-
+  facet_wrap(~traits)+
+  labs(title="Med R0")+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(x = "Variance Level", y = "Peak Epidemic Size")+
+  theme_bw()
 
 ## Super-spreading figures 
 ## This one shows the fraction of total cases caused by the top 20% of spreaders
 ggplot(subset(data, meanI>10), aes(x=var,y=top20,shape=cov,colour=cov)) + 
   geom_boxplot() + 
-  facet_wrap(~traits)
+  facet_wrap(~traits)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(title="High R0")+
+  labs(x = "Variance Level", y = "% of total infections caused by super spreaders")+
+  theme_bw()
+
 ## This one shows the mean number of infections caused by the individuals in the top 20% of spreaders
 ggplot(subset(data, meanI>10), aes(x=var,y=meanNumInfTop20,shape=cov,colour=cov)) + 
   geom_boxplot() + 
-  facet_wrap(~traits)
+  facet_wrap(~traits)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(title="High R0")+
+  labs(x = "Variance Level", y = "Mean # infections caused by SS")+
+  theme_bw()
+
 
 
 ## Effect of super-spreading on epidemiological dynamics
@@ -155,6 +172,8 @@ for (j in 1:6) { ## loop over the six different covariance combinations
 data <- do.call("rbind.data.frame",data)
 saveRDS(data, file="population_dynamics_all_simulations_lowvar.RDS")    
 
+
+
 data2= filter(data, Variance=="high", cov=="(0) Cov", traits=="c-gamma")
 ggplot(data2, aes(x=t, y=S, group=rep)) + geom_line()
 ggplot(data2, aes(x=t, y=S, group=rep)) + stat_summary(aes(group=Variance), geom="line", fun=mean)
@@ -171,14 +190,42 @@ apply(data4, 1, mean)
 
 data3[[1]][[1]]
 
+data$cov<-factor(data$cov, levels=c("(-) Cov", "(0) Cov", "(+) Cov"))
 
-## To plot the dynamics of S across all trait pairs, covariance structures, and variance levels 
-ggplot(data, aes(x=t, y=S, group=rep)) +
+data$traits<- factor(data$traits, levels= c("alpha-gamma", "c-shed","c-gamma", "shed-alpha"))
+
+
+
+## To plot the dynamics of S across all trait pairs, covariance structures, and variance levels
+
+
+
+intergroup<-ggplot(subset(data, traits%in%c("shed-alpha","c-gamma")), aes(x=t, y=I, group=rep)) +
   stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, alpha=.45, fun.args=list(conf.int=0.95)) +
   stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
   facet_grid(traits~cov) + 
-  ylim(0,250) + 
+  ylim(0,225) + 
+  xlim(0,50)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(x = "Time", y = "I")+
   theme_bw()
+  #theme(strip.background.y=element_rect(fill="lightgreen"))
+
+
+intragroup<-ggplot(subset(data, traits%in%c("alpha-gamma", "c-shed")), aes(x=t, y=I, group=rep)) +
+  stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, alpha=.45, fun.args=list(conf.int=0.95)) +
+  stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
+  facet_grid(traits~cov) + 
+  ylim(0,225) + 
+  xlim(0,50)+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  labs(x = "", y = "I")+
+  theme_bw()
+  #theme(strip.background.y=element_rect(fill="lightblue"))
+
+ggarrange(intragroup, intergroup, common.legend = TRUE, nrow=2, ncol=1,labels = "Med R0", hjust=-0.9, vjust = -.5, 
+          font.label = list(size = 12, face="plain"))
+
 
 ggplot(data, aes(x=t, y=I, group=rep)) +
   stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, alpha=.45, fun.args=list(conf.int=0.95)) +

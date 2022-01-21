@@ -191,14 +191,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-shed_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+shed_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-shed-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 shed_gamma
 
 
@@ -219,14 +219,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-shed_alpha<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+shed_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-shed-alpha")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 shed_alpha
 
 
@@ -247,14 +247,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_shed<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_shed<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-c-shed")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 c_shed
 
 ### CONTACT GAMMA
@@ -274,14 +274,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-c-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0,y=0)
+  ylim(0,175)+
+  xlim(0,425)
 c_gamma
 
 ### CONTACT ALPHA
@@ -301,14 +301,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_alpha<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-c-alpha")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 c_alpha
 
 ## ALPHA GAMMA
@@ -328,14 +328,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-alpha_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+alpha_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="low-R0-alpha-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 alpha_gamma
 
 library(tidyverse)
@@ -355,7 +355,7 @@ for (var in c("low","med","hi")) {
   for (corr in c("no","neg","pos")) {
     data <- readRDS(paste0("out_",corr,"corr_",var,"var_shed_gamma.RDS"))
     lapply(1:length(data), function(d)
-      data.frame(  Final = mean(tail(data[[d]][[1]]$I, n=50)),
+      data.frame( Final = mean(tail(data[[d]][[1]]$I, n=50)),
                   maxInf = max(data[[d]][[2]]$numInf),
                   Corr = as.factor(corr),
                   Var = as.factor(var),
@@ -365,15 +365,24 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-shed_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+shed_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-shed-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 shed_gamma
+
+shed_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
+  geom_boxplot(data=sumdata_use1, aes(shape=Corr, color = Var))+
+  theme_bw()+
+  labs(title="hi-R0-shed-gamma")+
+  labs(x = "Max Reff", y = "Final I")+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  ylim(0,150)+
+  xlim(0,350)
 
 
 ### SHED ALPHA
@@ -393,14 +402,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-shed_alpha<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+shed_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-shed-alpha")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 shed_alpha
 
 
@@ -421,14 +430,33 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_shed<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_shed<- ggplot(sumdata_use1, aes(x=log10(maxInf), y=log10(Final),color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-c-shed")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))
+
+c_shed<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
+  geom_boxplot(data=sumdata_use1, aes(color = Var))+
+  theme_bw()+
+  labs(title="hi-R0-c-shed")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,150)+
+  xlim(0,350)
+
+ggarrange(shed_gamma, c_shed, common.legend = TRUE, nrow=1, ncol=2)
+
+ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
+  geom_violin(data=sumdata_use1, aes(color = Var))+
+  theme_bw()+
+  labs(title="hi-R0-c-shed")+
+  labs(x = "Max Reff", y = "Final I")+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
+  ylim(0,150)+
+  xlim(0,350)
+
 c_shed
 
 ### CONTACT GAMMA
@@ -448,14 +476,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-c-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0,y=0)
+  ylim(0,175)+
+  xlim(0,425)
 c_gamma
 
 ### CONTACT ALPHA
@@ -475,14 +503,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-c_alpha<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+c_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-c-alpha")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 c_alpha
 
 ## ALPHA GAMMA
@@ -502,14 +530,14 @@ for (var in c("low","med","hi")) {
 }
 sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 
-alpha_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
+alpha_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
   labs(title="hi-R0-alpha-gamma")+
-  labs(x = "Final I", y = "Max Reff")+
+  labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
-  geom_smooth(method='lm',   alpha=0.35)+
-  expand_limits(x=0, y=0)
+  ylim(0,175)+
+  xlim(0,425)
 alpha_gamma
 
 library(tidyverse)

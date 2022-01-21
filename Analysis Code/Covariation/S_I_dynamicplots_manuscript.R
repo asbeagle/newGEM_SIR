@@ -113,12 +113,12 @@ ggplot(data, aes(x=t, y=S, group=rep)) +
   ylim(0,250) + 
   theme_bw()
 
-ggplot(data, aes(x=t, y=I, group=rep)) +
+plotz <- ggplot(data, aes(x=t, y=I, group=rep)) +
   stat_summary(aes(group=Variance), geom="ribbon", fun.data=mean_cl_normal, alpha=.45, fun.args=list(conf.int=0.95)) +
   stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
   facet_grid(traits~cov) + 
   ylim(0,200) + 
-  theme_bw()
+  theme_bw() 
 
 ### plot individual cases
 ## contact - shed
