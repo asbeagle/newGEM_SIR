@@ -28,6 +28,13 @@ shed_gamma<- ggplot(sumdata_use1, aes(x=Final, y=maxInf,color= Var, group=Var))+
   expand_limits(x=0, y=0)
 shed_gamma
 
+ggplot(sumdata_use1, aes(x=meantop20, y=maxInf,color= Var, group=Var))+
+  geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
+  theme_bw()+
+  labs(title="med-R0-shed-gamma")+
+  labs(x = "Final I", y = "Mean # Inf in top 20%")+
+  scale_color_manual(values=c("darkblue", "darkgreen", "pink"))
+
 
 ### SHED ALPHA
 i <- 1
@@ -194,11 +201,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 shed_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-shed-gamma")+
+  labs(title="Med-R0-shed-gamma")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 30,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 shed_gamma
 
 
@@ -222,11 +235,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 shed_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-shed-alpha")+
+  labs(title="Med-R0-shed-alpha")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 20,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 shed_alpha
 
 
@@ -250,11 +269,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 c_shed<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-c-shed")+
+  labs(title="Med-R0-c-shed")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 20,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 c_shed
 
 ### CONTACT GAMMA
@@ -277,11 +302,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 c_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-c-gamma")+
+  labs(title="Med-R0-c-gamma")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 20,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 c_gamma
 
 ### CONTACT ALPHA
@@ -304,11 +335,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 c_alpha<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-c-alpha")+
+  labs(title="Med-R0-c-alpha")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 20,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 c_alpha
 
 ## ALPHA GAMMA
@@ -331,11 +368,17 @@ sumdata_use1 <-do.call("rbind.data.frame", sumdata1)
 alpha_gamma<- ggplot(sumdata_use1, aes(x=maxInf, y=Final,color= Var, group=Var))+
   geom_point(data=sumdata_use1, aes(shape=Corr, color = Var), alpha = 0.75, size = 2.5)+
   theme_bw()+
-  labs(title="low-R0-alpha-gamma")+
+  labs(title="Med-R0-alpha-gamma")+
   labs(x = "Max Reff", y = "Final I")+
   scale_color_manual(values=c("darkblue", "darkgreen", "pink"))+
   ylim(0,175)+
-  xlim(0,425)
+  xlim(0,425)+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 20,  # Top margin
+                             r = 20,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 40))
 alpha_gamma
 
 library(tidyverse)
