@@ -97,7 +97,7 @@ for (j in 1:6) { ## loop over the six different covariance combinations
   }
 }
 data <- do.call("rbind.data.frame",data)
-saveRDS(data, file="population_dynamics_all_simulations_lowvar.RDS")    
+saveRDS(data, file="population_dynamics_all_simulations_medvar.RDS")    
 
 data2= filter(data, Variance=="high", cov=="(0) Cov", traits=="c-gamma")
 ggplot(data2, aes(x=t, y=S, group=rep)) + geom_line()
