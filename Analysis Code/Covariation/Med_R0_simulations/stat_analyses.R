@@ -61,4 +61,59 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     z1 = readRDS(paste0(paste("out",covMatrix,"hivar",var1[j],var2[j],sep="_"),".RDS"))
     z2 = readRDS(paste0(paste("out",covMatrix,"medvar",var1[j],var2[j],sep="_"),".RDS"))
     z3 = readRDS(paste0(paste("out",covMatrix,"lowvar",var1[j],var2[j],sep="_"),".RDS"))
+    z <- vector(mode='list',length=3)
+    lapply(1:length(z1), function(i) c(sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf),
+                                       i)) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
+    colnames(z[[1]])[1:2] <- c("top20SS","rep")
     
+    lapply(1:length(z2), function(i) c(sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf),
+                                       i)) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
+    colnames(z[[2]])[1:2] <- c("top20SS","rep")
+    
+    lapply(1:length(z3), function(i) c(sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf),
+                                       i)) %>% 
+      do.call("rbind.data.frame",.) %>%
+      mutate(., Variance="low",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[3]]
+    colnames(z[[3]])[1:2] <- c("top20SS","rep")
+    
+    data[[i]] <- do.call("rbind.data.frame",z)
+    i <- i+1
+  }
+}
+data %>% do.call("rbind.data.frame",.) -> data
+
+contrasts <- vector(mode='list', length=18)
+i <- 1
+for (j in 1:6) {
+  for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+    filter(data, traits==paste(var1[j],var2[j],sep='-') & cov==covMatrix) %>% 
+      as.data.frame() %>%
+      with(., lm(top20SS~Variance)) %>% emmeans(pairwise~Variance)-> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    comparison$contrasts %>% as.data.frame %>% mutate(., Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast
+    contrasts[[i]] <- contrast
+    i <- i + 1
+  }
+}
+contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
+write.csv(contrasts2, file="Var_effects_on_SS_stats.csv")
+
+contrasts <- vector(mode='list', length=18)
+i <- 1
+for (j in 1:6) {
+  for (var in c("high", "med", "low")) {
+    filter(data, traits==paste(var1[j],var2[j],sep='-') & Variance==var) %>% 
+      as.data.frame() -> summ
+    summ$cov <- factor(sapply(summ$cov, function(c) switch(c, "negcorr"="neg", "nocorr"="zero", "poscorr"="pos")) %>% unname, levels=c("pos","zero","neg"))
+    with(summ, lm(top20SS~cov)) %>% emmeans(pairwise~cov)-> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    comparison$contrasts %>% as.data.frame %>% mutate(., Variance=var, traits=paste(var1[j],var2[j],sep='-')) -> contrast
+    contrasts[[i]] <- contrast
+    i <- i + 1
+  }
+}
+contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
+write.csv(contrasts2, file="Cov_effects_on_SS_stats.csv")
+
