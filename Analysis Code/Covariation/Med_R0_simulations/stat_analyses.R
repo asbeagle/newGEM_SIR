@@ -25,10 +25,13 @@ for (j in 1:6) {
   for (covMatrix in c("(0) Cov", "(-) Cov", "(+) Cov")) {
     filter(data, traits==paste(var1[j],var2[j],sep='-') & cov==covMatrix) %>% group_by(Variance, rep) %>% summarise(peak=ifelse(max(I)>50,max(I),NA)) %>%
       as.data.frame() %>%
-      with(., lm(peak~Variance)) %>% emmeans(pairwise~Variance)-> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
-    comparison$contrasts %>% as.data.frame %>% mutate(., Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast
+      with(., lm(log(peak)~Variance)) -> model
+    normal.test <- shapiro.test(model$residuals)$p.value
+    model %>% emmeans(pairwise~Variance) -> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    comparison$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast
     contrasts[[i]] <- contrast
     i <- i + 1
+    
   }
 }
 contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
@@ -42,8 +45,10 @@ for (j in 1:6) {
     filter(data, traits==paste(var1[j],var2[j],sep='-') & Variance==var) %>% group_by(cov, rep) %>% summarise(peak=ifelse(max(I)>50,max(I),NA)) %>%
       as.data.frame() -> summ
     summ$cov <- factor(sapply(summ$cov, function(c) switch(c, "(-) Cov"="neg", "(0) Cov"="zero", "(+) Cov"="pos")) %>% unname, levels=c("pos","zero","neg"))
-    with(summ, lm(peak~cov)) %>% emmeans(pairwise~cov)-> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
-    comparison$contrasts %>% as.data.frame %>% mutate(., Variance=var, traits=paste(var1[j],var2[j],sep='-')) -> contrast
+    with(summ, lm(log(peak)~cov)) -> model
+    normal.test <- shapiro.test(model$residuals)$p.value
+    model %>% emmeans(pairwise~cov) -> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    comparison$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test, Variance=var, traits=paste(var1[j],var2[j],sep='-')) -> contrast
     contrasts[[i]] <- contrast
     i <- i + 1
   }
