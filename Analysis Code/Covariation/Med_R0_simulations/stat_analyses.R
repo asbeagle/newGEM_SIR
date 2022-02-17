@@ -19,23 +19,31 @@ library(emmeans)
 library(tidyverse)
 var1=c('c','c','c','shed','shed','alpha')
 var2=c('shed','alpha','gamma','alpha','gamma','gamma')
-contrasts <- vector(mode='list', length=18)
+contrasts1 <- vector(mode='list', length=18)
+contrasts2 <- vector(mode='list', length=18)
 i <- 1
 for (j in 1:6) {
   for (covMatrix in c("(0) Cov", "(-) Cov", "(+) Cov")) {
-    filter(data, traits==paste(var1[j],var2[j],sep='-') & cov==covMatrix) %>% group_by(Variance, rep) %>% summarise(peak=ifelse(max(I)>50,max(I),NA)) %>%
-      as.data.frame() %>%
-      with(., lm(log(peak)~Variance)) -> model
-    normal.test <- shapiro.test(model$residuals)$p.value
-    model %>% emmeans(pairwise~Variance) -> comparison ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
-    comparison$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast
-    contrasts[[i]] <- contrast
+    filter(data, traits==paste(var1[j],var2[j],sep='-') & cov==covMatrix) %>% group_by(Variance, rep) %>% summarise(peak=ifelse(max(I)>50,max(I),NA), Iequil=ifelse(min(I)>1,mean(tail(I),50),NA)) %>%
+      as.data.frame() -> d 
+    with(d, lm(log(peak)~Variance)) -> model1
+    with(d, lm(Iequil~Variance)) -> model2
+    normal.test1 <- shapiro.test(model1$residuals)$p.value
+    normal.test2 <- shapiro.test(model2$residuals)$p.value
+    model1 %>% emmeans(pairwise~Variance) -> comparison1 ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    model2 %>% emmeans(pairwise~Variance) -> comparison2 ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
+    comparison1$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test1, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast1
+    comparison2$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test2, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast2
+    contrasts1[[i]] <- contrast1
+    contrasts2[[i]] <- contrast2
     i <- i + 1
     
   }
 }
-contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
-write.csv(contrasts2, file="Var_effects_on_peak_stats.csv")
+contrasts1 %>% do.call("rbind.data.frame", .) -> contrasts1
+contrasts2 %>% do.call("rbind.data.frame", .) -> contrasts2
+write.csv(contrasts1, file="Var_effects_on_peak_stats.csv")
+write.csv(contrasts2, file="Var_effects_on_equil_stats.csv")
 
 
 contrasts <- vector(mode='list', length=18)
@@ -67,23 +75,26 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     z2 = readRDS(paste0(paste("out",covMatrix,"medvar",var1[j],var2[j],sep="_"),".RDS"))
     z3 = readRDS(paste0(paste("out",covMatrix,"lowvar",var1[j],var2[j],sep="_"),".RDS"))
     z <- vector(mode='list',length=3)
-    lapply(1:length(z1), function(i) c(sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf),
+    lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I),
+                                       sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
-    colnames(z[[1]])[1:2] <- c("top20SS","rep")
+    colnames(z[[1]])[1:3] <- c("peak","top20SS","rep")
     
-    lapply(1:length(z2), function(i) c(sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf),
+    lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I),
+                                       sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
-    colnames(z[[2]])[1:2] <- c("top20SS","rep")
+    colnames(z[[2]])[1:3] <- c("peak","top20SS","rep")
     
-    lapply(1:length(z3), function(i) c(sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf),
+    lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I),
+                                       sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="low",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[3]]
-    colnames(z[[3]])[1:2] <- c("top20SS","rep")
+    colnames(z[[3]])[1:3] <- c("peak","top20SS","rep")
     
     data[[i]] <- do.call("rbind.data.frame",z)
     i <- i+1
@@ -121,4 +132,18 @@ for (j in 1:6) {
 }
 contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
 write.csv(contrasts2, file="Cov_effects_on_SS_stats.csv")
+
+
+## Is there any effect of proportion of super-spreaders on peak epidemic size?
+## For each trait pairing, you could just regress peak epidemic size against proportion of super-spreaders
+glm(peak~top20SS,data=subset(data,traits=="c-shed" & peak > 50)) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-alpha" & peak > 50)) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-gamma" & peak > 50)) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="shed-alpha" & peak > 50)) %>% summary ## NOT significant
+glm(peak~top20SS,data=subset(data,traits=="shed-gamma" & peak > 50)) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="alpha-gamma" & peak > 50)) %>% summary ## significant
+
+## Of course, there is often a really strong correlation between top20SS and variance, so this could just be picking up that effect, and that once you've accounted for the effect of variance, there is no effect of top20SS
+
+
 
