@@ -32,8 +32,8 @@ for (j in 1:6) {
     normal.test2 <- shapiro.test(model2$residuals)$p.value
     model1 %>% emmeans(pairwise~Variance) -> comparison1 ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
     model2 %>% emmeans(pairwise~Variance) -> comparison2 ## see https://timmastny.com/blog/tests-pairwise-categorical-mean-emmeans-contrast/
-    comparison1$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test1, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast1
-    comparison2$contrasts %>% as.data.frame %>% mutate(., normalTest=normal.test2, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast2
+    comparison1$contrasts %>% as.data.frame %>% mutate(., estimate=exp(estimate), normalTest=normal.test1, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast1
+    comparison2$contrasts %>% as.data.frame %>% mutate(., estimate=exp(estimate), normalTest=normal.test2, Covariance=covMatrix, traits=paste(var1[j],var2[j],sep='-')) -> contrast2
     contrasts1[[i]] <- contrast1
     contrasts2[[i]] <- contrast2
     i <- i + 1
@@ -75,12 +75,13 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     z2 = readRDS(paste0(paste("out",covMatrix,"medvar",var1[j],var2[j],sep="_"),".RDS"))
     z3 = readRDS(paste0(paste("out",covMatrix,"lowvar",var1[j],var2[j],sep="_"),".RDS"))
     z <- vector(mode='list',length=3)
-    lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I),
-                                       sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf),
+    lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I), ## peak epidemic size
+                                       sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
+                                       ifelse(max(z1[[i]][[1]]$t)>99, glm.nb(z1[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
-    colnames(z[[1]])[1:3] <- c("peak","top20SS","rep")
+    colnames(z[[1]])[1:4] <- c("peak","top20SS","disp","rep")
     
     lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I),
                                        sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf),
@@ -143,7 +144,53 @@ glm(peak~top20SS,data=subset(data,traits=="shed-alpha" & peak > 50)) %>% summary
 glm(peak~top20SS,data=subset(data,traits=="shed-gamma" & peak > 50)) %>% summary ## significant
 glm(peak~top20SS,data=subset(data,traits=="alpha-gamma" & peak > 50)) %>% summary ## significant
 
-## Of course, there is often a really strong correlation between top20SS and variance, so this could just be picking up that effect, and that once you've accounted for the effect of variance, there is no effect of top20SS
+## Of course, there is ALWAYS a really strong correlation between top20SS and variance, so it could be that once you've accounted for the effect of variance on top20SS, there is no effect of top20SS on the peak
+aov(top20SS~Variance,data=subset(data,traits=="c-shed" & peak > 50)) %>% summary ## significant
+aov(top20SS~Variance,data=subset(data,traits=="c-alpha" & peak > 50)) %>% summary ## significant
+aov(top20SS~Variance,data=subset(data,traits=="c-gamma" & peak > 50)) %>% summary ## significant
+aov(top20SS~Variance,data=subset(data,traits=="shed-alpha" & peak > 50)) %>% summary ## significant
+aov(top20SS~Variance,data=subset(data,traits=="shed-gamma" & peak > 50)) %>% summary ## significant
+aov(top20SS~Variance,data=subset(data,traits=="alpha-gamma" & peak > 50)) %>% summary ## significant
 
+## c-shed influence of top20SS on peak after accounting for variance
+glm(peak~top20SS,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="low")) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="med")) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="high")) %>% summary ## NOT SIGNIFICANT
+glm(peak~top20SS+Variance,data=subset(data,traits=="c-shed" & peak > 50)) %>% summary ## significant effect of SS after accounting for variance
 
+aov(top20SS~cov,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="low")) %>% summary
+aov(top20SS~cov,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="med")) %>% summary
+aov(top20SS~cov,data=subset(data,traits=="c-shed" & peak > 50 & Variance=="high")) %>% summary
+glm(peak~top20SS+Variance+cov,data=subset(data,traits=="c-shed" & peak > 50)) %>% summary ## significant effect of SS after accounting for variance and covariance
+
+## c-alpha influence of top20SS on peak after accounting for variance
+glm(peak~top20SS,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="low")) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="med")) %>% summary ## significant
+glm(peak~top20SS,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="high")) %>% summary ## NOT SIGNIFICANT
+#glm(peak~top20SS+Variance-1,data=subset(data,traits=="c-alpha" & peak > 50)) %>% summary ## significant effect of SS after accounting for variance
+
+## of course, this could just be that there is a strong relationship between SS and covariance! Need to check this too.
+aov(top20SS~cov,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="low")) %>% summary ## significant
+aov(top20SS~cov,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="med")) %>% summary ## significant 
+aov(top20SS~cov,data=subset(data,traits=="c-alpha" & peak > 50 & Variance=="high")) %>% summary ## significant
+#glm(peak~top20SS+Variance+cov,data=subset(data,traits=="c-alpha" & peak > 50)) %>% summary ## significant effect of SS after accounting for variance and covariance
+
+## Must perform separate regressions after accounting for both variance and covariance, since these have a significant effect on top20SS
+peakSSreg <- expand.grid(cov=c("nocorr","negcorr","poscorr"),
+                         Variance=c("low","med","high"),
+                         traits=c("c-shed","c-alpha","c-gamma","shed-alpha","shed-gamma","alpha-gamma"),
+                         slope=NA,
+                         signif=NA,
+                         normal=NA
+                         ) %>% as.data.frame
+for (i in 1:nrow(peakSSreg)) {
+  mod <- try(lm(peak~top20SS,data=subset(data,traits==peakSSreg$traits[i] & peak > 50 & Variance==peakSSreg$Variance[i] & cov==peakSSreg$cov[i])))
+  if(!inherits(mod,'try-error')) { ## if all the simulations went extinct, don't try to do a regression
+    peakSSreg$slope[i] <- mod$coefficients[2]
+    if (!is.na(mod$coefficients[2])) { ## if there was no variation in top20SS then don't try to do a regression
+      peakSSreg$signif[i] <- signif(summary(mod)$coefficients[2,4],3)
+      peakSSreg$normal[i] <- ifelse(signif(shapiro.test(mod$residuals)$p.value,3) > 0.05, TRUE, FALSE)
+    }
+  }
+}
 
