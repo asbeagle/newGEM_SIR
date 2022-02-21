@@ -83,25 +83,40 @@ for (j in 1:6) { ## loop over the six different covariance combinations
       mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
     colnames(z[[1]])[1:4] <- c("peak","top20SS","disp","rep")
     
-    lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I),
-                                       sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf),
+    lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I), ## peak epidemic size
+                                       sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
+                                       ifelse(max(z2[[i]][[1]]$t)>99, glm.nb(z2[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
-    colnames(z[[2]])[1:3] <- c("peak","top20SS","rep")
+    colnames(z[[2]])[1:4] <- c("peak","top20SS","disp","rep")
     
-    lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I),
-                                       sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf),
+    lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I), ## peak epidemic size
+                                       sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
+                                       ifelse(max(z3[[i]][[1]]$t)>99, glm.nb(z3[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="low",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[3]]
-    colnames(z[[3]])[1:3] <- c("peak","top20SS","rep")
+    colnames(z[[3]])[1:4] <- c("peak","top20SS","disp","rep")
     
     data[[i]] <- do.call("rbind.data.frame",z)
     i <- i+1
   }
 }
 data %>% do.call("rbind.data.frame",.) -> data
+
+data$Variance<-factor(data$Variance, levels = c("low", "med", "high"))
+
+ggplot(data, aes(x=disp))+
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.45)+
+  facet_grid(traits~cov)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))+
+  scale_fill_manual(values=c("pink", "darkblue", "darkgreen"))+
+  labs(y="Density", x="Dispersion (K)")
+
+subset(data, traits%in%c("alpha-gamma","c-shed", "shed-alpha", "shed-gamma"))
+
 
 contrasts <- vector(mode='list', length=18)
 i <- 1
