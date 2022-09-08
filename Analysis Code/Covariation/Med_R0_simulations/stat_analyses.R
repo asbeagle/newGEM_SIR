@@ -17,6 +17,7 @@ data <- readRDS("population_dynamics_all_simulations_medvar.RDS")
 
 library(emmeans)
 library(tidyverse)
+library(MASS)
 var1=c('c','c','c','shed','shed','alpha')
 var2=c('shed','alpha','gamma','alpha','gamma','gamma')
 contrasts1 <- vector(mode='list', length=18)
@@ -64,7 +65,7 @@ for (j in 1:6) {
 contrasts %>% do.call("rbind.data.frame", .) -> contrasts2
 write.csv(contrasts2, file="Cov_effects_on_peak_stats.csv")
 
-## Stats on the fraction of cases caused by the 20% of spreaders
+## Stats on super spreading via dispersion (K)
 var1=c('c','c','c','shed','shed','alpha')
 var2=c('shed','alpha','gamma','alpha','gamma','gamma')
 i <- 1
@@ -106,16 +107,77 @@ for (j in 1:6) { ## loop over the six different covariance combinations
 data %>% do.call("rbind.data.frame",.) -> data
 
 data$Variance<-factor(data$Variance, levels = c("low", "med", "high"))
+data$traits<-factor(data$traits, levels=c("alpha-gamma", "c-shed", "c-alpha","c-gamma", "shed-alpha", "shed-gamma"))
 
 ggplot(data, aes(x=disp))+
   geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.45)+
-  facet_grid(traits~cov)+
+  facet_grid(cov~traits)+
   theme_bw()+
   scale_color_manual(values=c("pink", "darkblue", "darkgreen"))+
   scale_fill_manual(values=c("pink", "darkblue", "darkgreen"))+
   labs(y="Density", x="Dispersion (K)")
 
-subset(data, traits%in%c("alpha-gamma","c-shed", "shed-alpha", "shed-gamma"))
+
+## plot only the moderate variation dispersion plots 
+var_mod_data<-subset(data, Variance%in%c("med"))
+ggplot(subset(var_mod_data, traits%in%c("alpha-gamma","c-shed", "c-alpha", "c-gamma")), aes(x=disp))+
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.45)+
+  facet_grid(cov~traits)+
+  theme_bw()+
+  scale_color_manual(values=("darkblue"))+
+  scale_fill_manual(values=("darkblue"))+
+  labs(y="Density", x="Dispersion (K)")
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed", "shed-alpha", "shed-gamma")), aes(x=disp))+
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.45)+
+  facet_grid(cov~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))+
+  scale_fill_manual(values=c("pink", "darkblue", "darkgreen"))+
+  labs(y="Density", x="Dispersion (K)")
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed", "shed-alpha", "shed-gamma")), aes(x=peak))+
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.45)+
+  facet_grid(cov~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))+
+  scale_fill_manual(values=c("pink", "darkblue", "darkgreen"))+
+  labs(y="Density", x="Peak")
+
+
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed", "shed-alpha", "shed-gamma")), aes(x=disp, y=peak, shape=Variance, color=cov))+
+  geom_point()+
+  facet_grid(~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed", "c-alpha", "c-gamma")), aes(x=Variance, y=disp,shape=cov,colour=cov))+
+  geom_boxplot()  +
+  facet_grid(~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))
+
+data<-subset(data, peak>5)
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed", "c-alpha", "c-gamma")), aes(x=Variance, y=peak,shape=cov,colour=cov, fill=cov))+
+  geom_violin()  +
+  facet_grid(~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))
+  
+
+ggplot(subset(data, traits%in%c("c-gamma", "shed-gamma")), aes(x=Variance, y=peak,shape=cov,fill=cov))+
+  geom_violin()  +
+  facet_grid(~traits)+
+  theme_bw()+
+  scale_fill_manual(values=c("pink", "darkblue", "darkgreen"))
+
+ggplot(subset(data, traits%in%c("alpha-gamma","c-shed")), aes(x=Variance, y=peak,shape=cov,colour=cov))+
+  geom_violin()  +
+  facet_grid(~traits)+
+  theme_bw()+
+  scale_color_manual(values=c("pink", "darkblue", "darkgreen"))
 
 
 contrasts <- vector(mode='list', length=18)
