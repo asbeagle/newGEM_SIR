@@ -6,7 +6,7 @@ library(ggplot2)
 library(cowplot)
 library(ggpubr)
 library(ggtext)
-
+library(magrittr)
 
 ## Stats on super spreading (k) and peak epidemic size
 var1=c('c','c','c','shed','shed','alpha')
@@ -22,32 +22,38 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I), ## peak epidemic size
                                        sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z1[[i]][[1]]$t)>99, glm.nb(z1[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                                       ifelse(length(z1[[i]][[1]]$t)<99, 1, 0),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
-    colnames(z[[1]])[1:4] <- c("peak","top20SS","disp","rep")
+    colnames(z[[1]])[1:5] <- c("peak","top20SS","disp","fadeout", "rep")
     
     lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I), ## peak epidemic size
                                        sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z2[[i]][[1]]$t)>99, glm.nb(z2[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                                       ifelse(length(z2[[i]][[1]]$t)<99, 1, 0),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
-    colnames(z[[2]])[1:4] <- c("peak","top20SS","disp","rep")
+    colnames(z[[2]])[1:5] <- c("peak","top20SS","disp","fadeout","rep")
     
     lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I), ## peak epidemic size
                                        sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z3[[i]][[1]]$t)>99, glm.nb(z3[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                                       ifelse(length(z3[[i]][[1]]$t)<99, 1, 0),
                                        i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="low",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[3]]
-    colnames(z[[3]])[1:4] <- c("peak","top20SS","disp","rep")
+    colnames(z[[3]])[1:5] <- c("peak","top20SS","disp","fadeout","rep")
     
     data[[i]] <- do.call("rbind.data.frame",z)
     i <- i+1
   }
 }
-data %>% do.call("rbind.data.frame",.) -> data
+data %<>% do.call("rbind.data.frame",.) 
+
+data %>% group_by(Variance, cov, traits) %>% summarise(nFade=sum(fadeout))
+
 
 # order categories 
 data$traits<-factor(data$traits, levels=c("alpha-gamma", "c-shed", "c-alpha","c-gamma", "shed-alpha", "shed-gamma"))
@@ -75,10 +81,18 @@ mutate(data, cov_sign=ifelse(Covariance=="negative","(-)",
                              ifelse(Covariance=="none", "(0)", "(+)")))->data
 data$cov_sign<-factor(data$cov_sign,levels=c("(-)", "(0)","(+)"))
 
+as.factor(data$fadeout)
+
+ggplot(data, aes(x=fadeout, fill=Variance))+
+  geom_bar( position=position_dodge())+
+  facet_grid(cov_sign~traits)+
+  theme_bw()+
+  scale_x_discrete(limits=c(0, 1))
+
+
 ####### SUPER SPREADING PLOTS
 ## need to bin extreme disp values
 2 -> data$disp[data$disp>= 2]
-
 disp_data<-subset(data, disp!="NA")
 
 # max disp R=1: 10707.47
@@ -249,7 +263,10 @@ dispXpeak_plot<-ggplot(subset(data, trait_name%in%c("virulence-recovery","contac
 pdf("dispXpeak_plot.pdf", width =10, height = 7)
 print(dispXpeak_plot) 
 dev.off() 
-  
+
+### Calculate epidemic fade out
+
+
 
 ###### INFECTED DYNAMMIC PLOTS
 # format output for plotting in ggplot
@@ -338,7 +355,7 @@ intragroup_I<-ggplot(subset(data2, trait_name%in%c("virulence-recovery", "contac
   stat_summary(aes(group=Variance,colour=Variance), geom="line", fun=mean) + 
   facet_grid(trait_name~cov_sign) + 
   ylim(0,175) + 
-  xlim(0,75)+
+ # xlim(0,75)+
   scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   labs(x = "time", y = "average # infected individuals")+
   theme_bw()+
