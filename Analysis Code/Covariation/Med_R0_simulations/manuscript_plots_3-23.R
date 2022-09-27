@@ -19,7 +19,7 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     z2 = readRDS(paste0(paste("out","R=1",covMatrix,"medvar",var1[j],var2[j],sep="_"),".RDS"))
     z3 = readRDS(paste0(paste("out","R=1",covMatrix,"lowvar",var1[j],var2[j],sep="_"),".RDS"))
     z <- vector(mode='list',length=3)
-    lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I), ## peak epidemic size
+    lapply(1:length(z1), function(i) c(max(z1[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
                                        sum(sort(z1[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z1[[i]][[2]]))])/sum(z1[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z1[[i]][[1]]$t)>99, glm.nb(z1[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        ifelse(length(z1[[i]][[1]]$t)<99, 1, 0),
@@ -28,7 +28,7 @@ for (j in 1:6) { ## loop over the six different covariance combinations
       mutate(., Variance="high",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[1]]
     colnames(z[[1]])[1:5] <- c("peak","top20SS","disp","fadeout", "rep")
     
-    lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I), ## peak epidemic size
+    lapply(1:length(z2), function(i) c(max(z2[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
                                        sum(sort(z2[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z2[[i]][[2]]))])/sum(z2[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z2[[i]][[1]]$t)>99, glm.nb(z2[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        ifelse(length(z2[[i]][[1]]$t)<99, 1, 0),
@@ -37,7 +37,7 @@ for (j in 1:6) { ## loop over the six different covariance combinations
       mutate(., Variance="med",cov=covMatrix, traits=paste(var1[j],var2[j],sep="-")) -> z[[2]]
     colnames(z[[2]])[1:5] <- c("peak","top20SS","disp","fadeout","rep")
     
-    lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I), ## peak epidemic size
+    lapply(1:length(z3), function(i) c(max(z3[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
                                        sum(sort(z3[[i]][[2]]$numInf,decreasing=TRUE)[1:round(0.2*nrow(z3[[i]][[2]]))])/sum(z3[[i]][[2]]$numInf), ## fraction of cases caused by top 20% of spreaders
                                        ifelse(max(z3[[i]][[1]]$t)>99, glm.nb(z3[[i]][[2]]$numInf~1)$theta, NA), ## dispersion parameter of negative binomial distribution fit to numInf
                                        ifelse(length(z3[[i]][[1]]$t)<99, 1, 0),
@@ -55,9 +55,6 @@ data %<>% do.call("rbind.data.frame",.)
 data %>% group_by(Variance, cov, traits) %>% summarise(nFade=sum(fadeout))
 
 
-# order categories 
-data$traits<-factor(data$traits, levels=c("alpha-gamma", "c-shed", "c-alpha","c-gamma", "shed-alpha", "shed-gamma"))
-
 ##create a column with names rather param symbols
 mutate(data, trait_name=ifelse(traits=="alpha-gamma","virulence-recovery",
                                ifelse(traits=="c-shed","contact-infectiousness", 
@@ -70,6 +67,7 @@ mutate(data, trait_name=ifelse(traits=="alpha-gamma","virulence-recovery",
   mutate(., Variance=ifelse(Variance=="low", "low",
                             ifelse(Variance=="med", "moderate", "high"))) -> data
 
+## order variables
 data$Variance<-factor(data$Variance, levels = c("low", "moderate", "high"))
 data$trait_name<-factor(data$trait_name, levels=c("virulence-recovery", "contact-infectiousness", 
                                                   "contact-virulence","contact-recovery", "infectiousness-virulence", 
@@ -81,8 +79,6 @@ mutate(data, cov_sign=ifelse(Covariance=="negative","(-)",
                              ifelse(Covariance=="none", "(0)", "(+)")))->data
 data$cov_sign<-factor(data$cov_sign,levels=c("(-)", "(0)","(+)"))
 
-as.factor(data$fadeout)
-
 ggplot(data, aes(x=fadeout, fill=Variance))+
   geom_bar( position=position_dodge())+
   facet_grid(cov_sign~traits)+
@@ -90,10 +86,7 @@ ggplot(data, aes(x=fadeout, fill=Variance))+
   scale_x_discrete(limits=c(0, 1))
 
 
-####### SUPER SPREADING PLOTS
-## need to bin extreme disp values
-2 -> data$disp[data$disp>= 2]
-disp_data<-subset(data, disp!="NA")
+data %>% group_by(Variance, cov_sign, trait_name) %>% summarise(nFade=sum(fadeout), prop.fade=sum(fadeout)/100) -> fade_dat
 
 # max disp R=1: 10707.47
 # max disp R=4: 34713.93
@@ -106,6 +99,52 @@ ggplot(data, aes(x=disp))+
   scale_color_manual(values=c("cornflowerblue", "pink", "sienna"))+
   scale_fill_manual(values=c("cornflowerblue", "pink", "sienna"))+
   labs(y="Density", x="Dispersion (k)")
+
+# R0=1 fade out bar plots
+intergroup_fade<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), aes(x=fadeout, fill=Variance))+
+  geom_bar(position=position_dodge2(width=1.2, preserve="single"))+
+  scale_fill_manual(values=c("cornflowerblue", "pink", "sienna3"))+
+  facet_grid(cov_sign~trait_name)+
+  theme_bw()+
+  scale_x_discrete(limits=c(0, 1))+
+  labs(y="Count", x="Fade out", title= "Intergroup Trait Pairings")+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10,  # Top margin
+                             r = 20,  # Right margin
+                             b = 10,  # Bottom margin
+                             l = 10),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))
+
+pdf("inter_fade.pdf", width = 16, height = 12)
+print(intergroup_fade) 
+dev.off()
+
+intragroup_fade<-ggplot(subset(data, trait_name%in%c("virulence-recovery", "contact-infectiousness")), aes(x=fadeout, fill=Variance))+
+  geom_bar(position=position_dodge2(width=1.2, preserve="single"))+
+  scale_fill_manual(values=c("cornflowerblue", "pink", "sienna3"))+
+  facet_grid(cov_sign~trait_name)+
+  theme_bw()+
+  scale_x_discrete(limits=c(0, 1))+
+  labs(y="Count", x="Fade out", title= "Intragroup Trait Pairings")+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10,  # Top margin
+                             r = 20,  # Right margin
+                             b = 10,  # Bottom margin
+                             l = 10),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))
+
+pdf("inrar_fade.pdf", width = 16, height = 12)
+print(intragroup_fade) 
+dev.off()
+
+####### SUPER SPREADING PLOTS
+## need to bin extreme disp values
+1.5 -> data$disp[data$disp>= 1.5]
+disp_data<-subset(data, disp!="NA")
 
 # super spreading via dispersion plots, some pairs
 intra_k<-ggplot(subset(disp_data, trait_name%in%c("contact-infectiousness","virulence-recovery")), aes(x=disp))+
@@ -121,15 +160,17 @@ intra_k<-ggplot(subset(disp_data, trait_name%in%c("contact-infectiousness","viru
         plot.margin = margin(t = 10,  # Top margin
                              r = 20,  # Right margin
                              b = 10,  # Bottom margin
-                             l = 40))+
+                             l = 40),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))+
   geom_vline(xintercept = 0.16, linetype="dashed")+
   theme(axis.title.x = ggtext::element_markdown())
 
-pdf("intra_k_plots.pdf", width = 10, height = 10)
+pdf("intra_k_plots.pdf", width = 16, height = 12)
 print(intra_k) 
 dev.off() 
 
-inter_k_a<-ggplot(subset(disp_data, trait_name%in%c("contact-virulence", "contact-recovery","infectiousness-virulence", "infectiousness-recovery")), aes(x=disp))+
+inter_k<-ggplot(subset(disp_data, trait_name%in%c("contact-virulence", "contact-recovery","infectiousness-virulence", "infectiousness-recovery")), aes(x=disp))+
   geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.9)+
   facet_grid(cov_sign~trait_name)+
   theme_bw()+
@@ -142,76 +183,61 @@ inter_k_a<-ggplot(subset(disp_data, trait_name%in%c("contact-virulence", "contac
         plot.margin = margin(t = 10,  # Top margin
                              r = 20,  # Right margin
                              b = 10,  # Bottom margin
-                             l = 40))+
-  geom_vline(xintercept = 0.16, linetype="dashed")+
-  theme(axis.title.x = ggtext::element_markdown())
-
-inter_k_b<-ggplot(subset(data, trait_name%in%c("infectiousness-virulence")), aes(x=disp))+
-  geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=0.9)+
-  facet_grid(cov_sign~trait_name)+
-  theme_bw()+
-  scale_color_manual(values=c( "cornflowerblue", "pink", "sienna3"))+
-  scale_fill_manual(values=c( "cornflowerblue", "pink", "sienna3"))+
-  labs(y="Density", x="Dispersion (*k*)")+
-  ggtitle("Intergroup Trait Pairings (b)")+
-  theme(text = element_text(size=15),
-        plot.title = element_text(hjust = 0.5),
-        plot.margin = margin(t = 10,  # Top margin
-                             r = 20,  # Right margin
-                             b = 10,  # Bottom margin
-                             l = 40))+
+                             l = 40),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))+
   geom_vline(xintercept = 0.16, linetype="dashed")+
   theme(axis.title.x = ggtext::element_markdown())
 
 
-pdf("inter_k_plots.pdf", width = 10, height = 10)
+
+pdf("inter_k_plots.pdf", width = 16, height = 12)
 print(inter_k) 
 dev.off() 
 
-####### PEAK EPIDEMIC SIZE PLOTS
-data1<-subset(data, peak>5) # remove peaks smaller than 5
-data2<-subset(data, peak>10)
+#### try ECDF plots
 
-# making colors var and x-cov
-inter_peak<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")),aes(x=cov_sign, y=peak,shape=Variance,fill=Variance))+
-  geom_violin()  +
-  facet_grid(~trait_name)+
+data %>% group_by(Variance, cov_sign, trait_name) %>% summarise(maxpeak=max(peak)) -> max_peak_dat
+
+inter_peak<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), aes(x=peak))+
+  stat_ecdf(aes(color=Variance),size=1.5, alpha=0.8)+
+  geom_point(data=subset(max_peak_dat, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), mapping=aes(x=maxpeak, y=1, shape=Variance),size=3,alpha=0.7)+
+  facet_grid(cov_sign~trait_name)+
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   theme_bw()+
-  labs(y="Peak", x="Covariance")+
-  scale_fill_manual(values=c("cornflowerblue", "mistyrose", "sienna3"))+
-  ggtitle("Intergroup Trait Pairings")+
+  labs(y="% of simulations", x="Peak", title= "Intergroup Trait Pairings")+
   theme(text = element_text(size=15),
         plot.title = element_text(hjust = 0.5),
         plot.margin = margin(t = 10,  # Top margin
                              r = 20,  # Right margin
                              b = 10,  # Bottom margin
-                             l = 10))
+                             l = 10),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))
 
-pdf("inter_peak_plots.pdf", width = 10, height = 5)
+pdf("inter_peak_R1_plot.pdf", width = 16, height = 12)
 print(inter_peak) 
-dev.off() 
+dev.off()
 
-# intragroup trait pairings
-intra_peak<- ggplot(subset(data, trait_name%in%c("contact-infectiousness", "virulence-recovery")), aes(x=cov_sign, y=peak,shape=Variance, fill=Variance))+
-  geom_violin()  +
-  facet_grid(~trait_name)+
+intra_peak<-ggplot(subset(data, trait_name%in%c("virulence-recovery", "contact-infectiousness")), aes(x=peak))+
+  stat_ecdf(aes(color=Variance),size=1.5, alpha=0.8)+
+  geom_point(data=subset(max_peak_dat, trait_name%in%c("virulence-recovery", "contact-infectiousness")), mapping=aes(x=maxpeak, y=1,shape=Variance),size=3)+
+  facet_grid(cov_sign~trait_name)+
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   theme_bw()+
-  labs(y="Peak", x="Covariation")+
-  scale_fill_manual(values=c("cornflowerblue", "mistyrose", "sienna3"))+
-  ggtitle("Intragroup Trait Pairings")+
+  labs(y="% of simulations", x="Peak", title = "Intragroup Trait Pairings")+
   theme(text = element_text(size=15),
         plot.title = element_text(hjust = 0.5),
         plot.margin = margin(t = 10,  # Top margin
-                             r = 10,  # Right margin
+                             r = 20,  # Right margin
                              b = 10,  # Bottom margin
-                             l = 10))
-  
+                             l = 10),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))
 
-pdf("intra_peak_plots.pdf", width = 10, height = 5)
+pdf("intra_peak_R1_plot.pdf", width = 16, height = 12)
 print(intra_peak) 
-dev.off() 
-
-#ggarrange(intra, inter, common.legend = TRUE, ncol=2, nrow=1, legend="right")
+dev.off()
 
 ###### EFFECT OF SUPER SPREADING ON PEAK EPIDEMIC SIZE
 data3<-subset(data, peak>50) 
@@ -251,22 +277,21 @@ dispXpeak_plot<-ggplot(subset(data, trait_name%in%c("virulence-recovery","contac
   labs(y="Peak", x="Dispersion (*k*)")+
   scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   theme(text = element_text(size=15),
+        strip.text.x = element_text(size = 10),
         plot.title = element_text(hjust = 0.5),
         plot.margin = margin(t = 10,  # Top margin
                              r = 10,  # Right margin
                              b = 10,  # Bottom margin
                              l = 10),
         panel.spacing.x=unit(5,"mm"),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'),
         axis.title.x = ggtext::element_markdown())+
   geom_vline(xintercept = 0.16, linetype="dashed")
 
 pdf("dispXpeak_plot.pdf", width =10, height = 7)
 print(dispXpeak_plot) 
 dev.off() 
-
-### Calculate epidemic fade out
-
-
 
 ###### INFECTED DYNAMMIC PLOTS
 # format output for plotting in ggplot
@@ -380,4 +405,50 @@ print(dispXpeak_plot)
 dev.off() 
 
 max(data$disp)
+
+
+### not using violin plots
+####### PEAK EPIDEMIC SIZE PLOTS
+data1<-subset(data, peak>5) # remove peaks smaller than 5
+data2<-subset(data, peak>10)
+
+# making colors var and x-cov
+inter_peak<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")),aes(x=cov_sign, y=peak,shape=Variance,fill=Variance))+
+  geom_violin()  +
+  facet_grid(~trait_name)+
+  theme_bw()+
+  labs(y="Peak", x="Covariance")+
+  scale_fill_manual(values=c("cornflowerblue", "mistyrose", "sienna3"))+
+  ggtitle("Intergroup Trait Pairings")+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10,  # Top margin
+                             r = 20,  # Right margin
+                             b = 10,  # Bottom margin
+                             l = 10))
+
+pdf("inter_peak_plots.pdf", width = 10, height = 5)
+print(inter_peak) 
+dev.off() 
+
+# intragroup trait pairings
+intra_peak<- ggplot(subset(data, trait_name%in%c("contact-infectiousness", "virulence-recovery")), aes(x=cov_sign, y=peak,shape=Variance, fill=Variance))+
+  geom_violin()  +
+  facet_grid(~trait_name)+
+  theme_bw()+
+  labs(y="Peak", x="Covariation")+
+  scale_fill_manual(values=c("cornflowerblue", "mistyrose", "sienna3"))+
+  ggtitle("Intragroup Trait Pairings")+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10,  # Top margin
+                             r = 10,  # Right margin
+                             b = 10,  # Bottom margin
+                             l = 10))
+
+
+pdf("intra_peak_plots.pdf", width = 10, height = 5)
+print(intra_peak) 
+dev.off() 
+
 
