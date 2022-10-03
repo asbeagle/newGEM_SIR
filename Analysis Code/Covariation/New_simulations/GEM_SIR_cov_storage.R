@@ -1,28 +1,42 @@
+## traitmeans - Vector of mean trait values
+## traitsds - Vector of trait standard deviations
+## corr - Correlation between the traits on the log-scale
 pick_individuals_multivariate <-function(N, traitmeans, traitsds, corr, seed=floor(runif(1,1,1e5))) {
   set.seed(seed)
-  
-  ## Generate Lognormal random variables with zeros. 
-  ## traitmeans - Vector of mean trait values
-  ## traitsds - Vector of trait standard deviations
-  ## R - Correlation matrix - should have 1s along the diagonal and off-diagonal elements reflecting correlations between different variables
-  
-  ## Number of traits
+
   p <- length(traitmeans);
   mu <- matrix(0,p,1);
   sigma <- matrix(0,p,p);
+  ## Generate Lognormal random variables
+  ## To produce a distribution with mean equal to traitmean
+  ## and variance equal to traitsd^2, the parameters of
+  ## the corresponding lognormal distribution are:
   for (i in 1:p) {
     mu[i] = log(traitmeans[i]^2 / sqrt(traitsds[i]^2+traitmeans[i]^2))
     sigma[i,i] = log(1 + traitsds[i]^2/traitmeans[i]^2);
   }
-  
+  ## generate the correlation matrix
+  corr <- matrix(c(1,corr,corr,1),nrow=2,byrow=TRUE)
+  ## generate the covariance matrix
   Cov <- sqrt(sigma)%*%corr%*%sqrt(sigma);
+  Cov.Eigen = eigen(Cov);
+  Cov.EigenVal <- Cov.Eigen$values*(abs(Cov.Eigen$values) >= 1e-12);
+  RootCov = (Cov.Eigen$vectors)%*%diag(sqrt(Cov.EigenVal))%*%t(Cov.Eigen$vectors);
   X <- matrix(rnorm(p*N,0,1), nrow = N, ncol = p);
   for (i in 1:N){
-    X[i,] <- exp(mu + chol(Cov)%*%X[i,])
+    X[i,] <- exp(mu + RootCov%*%X[i,])
   }
   colnames(X) <- names(traitmeans) ## give the columns names
   return(X);
 }
+
+# pick_individuals_multivariate <- function(traitmeans, traitsds, corr) {
+#   a <- rep(-Inf,2)
+#   while(any(a < 0)) {
+#     a <- as.numeric(rmvnorm(1, mean=traitmeans, sigma=matrix(c(traitsds[1]^2,rep(corr*traitsds[1]*traitsds[2],2),traitsds[2]^2),nrow=2,byrow=TRUE)))
+#   }
+#   return(a)
+# }
 
 ## New version that returns information on the traits and fitness of every infected individual
 ## This version can be used to simulate an SIR with covariance between *any* two parameters, 

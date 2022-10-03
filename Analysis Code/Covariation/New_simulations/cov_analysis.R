@@ -6,9 +6,9 @@ library(parallel)
 set.seed(123432)
 seeds <- floor(runif(100,1,1e5)) # set seeds
 
-nocorr <- matrix(c(1,0,0,1), nrow=2, byrow=T)
-negcorr <- matrix(c(1,-.5,-.5,1), nrow=2, byrow=T)
-poscorr <- matrix(c(1,.5,.5,1), nrow=2, byrow=T)
+nocorr <- 0
+negcorr <- -0.5
+poscorr <- 0.5
 
 ## The baseline parameters give R = 8. To scale the parameters for R = 4 and R = 1 use
 ## Solve[(((1 - p) c ((1 - p) s)/(1 + (1 - p) s) (b - d)/bs)/(d + (1 + p) a + (1 + p) g) /. params) == R, p]
@@ -34,18 +34,18 @@ for (R in c(8,4,1)) {
   var2=c('shed','alpha','gamma','alpha','gamma','gamma')
   
   for (j in 1:6) { ## loop over the six different covariance combinations
-    for (covMatrix in c("nocorr", "negcorr", "poscorr")) {
+    for (corr in c("nocorr", "negcorr", "poscorr")) {
       for (varLevel in c("hivar","medvar","lowvar")) {
-        print(paste("out",covMatrix,varLevel,var1[j],var2[j],sep="_"))
+        print(paste("out",corr,varLevel,var1[j],var2[j],sep="_"))
         mclapply(seeds, 
                  function(i) gillespie.SIR.cov_storage(tmax=100, 
                                                        params=get(varLevel), 
-                                                       corr=get(covMatrix), 
+                                                       corr=get(corr), 
                                                        x=initial_state, 
                                                        covParams=c(var1[j],var2[j]),
                                                        seed=i),
                  mc.cores=10) -> z
-        saveRDS(z, file=paste0(paste(paste0("out_R=",R),covMatrix,varLevel,var1[j],var2[j],sep="_"),".RDS"))
+        saveRDS(z, file=paste0(paste(paste0("out_R=",R),corr,varLevel,var1[j],var2[j],sep="_"),".RDS"))
       }
     }
   }
