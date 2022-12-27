@@ -61,3 +61,27 @@ var(traits2[,1])
 var(traits3[,1])  
 
 
+
+
+
+corr <- matrix(c(1,0,0,1), nrow=2, byrow=TRUE) ## I specify the correlation matrix
+traits2 <- pick_individuals_multivariate(100000, traitmeans, traitsds, corr)
+
+logcov <- matrix(c(log(traitsds[1]^2/traitmeans[1]^2+1),log(0.5),
+                   log(0.5),log(traitsds[2]^2/traitmeans[2]^2+1)),
+                 nrow=2,byrow=TRUE)
+logmeans <- c(log(traitmeans[1]^2/sqrt(traitsds[1]^2+traitmeans[1]^2)),
+              log(traitmeans[2]^2/sqrt(traitsds[2]^2+traitmeans[2]^2)))
+traits3 <- rlnorm.rplus(100000, meanlog=logmeans, varlog=logcov)
+
+
+test <- function(traitmeans, traitsds, corr) {
+  a <- rep(-Inf,2)
+  while(any(a < 0)) {
+    a <- as.numeric(rmvnorm(1, mean=traitmeans, sigma=matrix(c(traitsds[1]^2,rep(corr*traitsds[1]*traitsds[2],2),traitsds[2]^2),nrow=2,byrow=TRUE)))
+  }
+  return(a)
+}
+
+a <- t(sapply(1:1000, function(i) test(traitmeans=c(0.1,0.1), traitsds=c(0.5,0.5), corr=0.5)))
+

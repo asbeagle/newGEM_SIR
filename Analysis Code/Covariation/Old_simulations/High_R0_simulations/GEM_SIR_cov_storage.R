@@ -158,3 +158,4 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
   return(results)
 }
 
+
