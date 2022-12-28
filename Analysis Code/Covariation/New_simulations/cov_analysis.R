@@ -50,10 +50,8 @@ for (R in c(8,4,1)) {
     }
   }
 }
-  
-#     
-# 
-# ## To create an equivalent plot to the one below, just in ggplot, use the following code
+
+
 # var1=c('c','c','c','shed','shed','alpha')
 # var2=c('shed','alpha','gamma','alpha','gamma','gamma')
 # i <- 1
