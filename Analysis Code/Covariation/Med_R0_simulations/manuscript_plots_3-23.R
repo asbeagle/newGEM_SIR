@@ -52,6 +52,8 @@ for (j in 1:6) { ## loop over the six different covariance combinations
 }
 data %<>% do.call("rbind.data.frame",.) 
 
+#data %>% group_by(Variance, Covariance, trait_name, rep) %>% summarise(maxI=max(I), maxT=max(t)) -> data2
+
 data %>% group_by(Variance, cov, traits) %>% summarise(nFade=sum(fadeout))
 
 
@@ -146,6 +148,10 @@ dev.off()
 1.5 -> data$disp[data$disp>= 1.5]
 disp_data<-subset(data, disp!="NA")
 
+## make plot of secondary infections for example of what dispersion is showing
+
+ggplot(subset(disp_data, trait_name%in%c("contact-infectiousness","virulence-recovery")), aes(x=head))
+
 # super spreading via dispersion plots, some pairs
 intra_k<-ggplot(subset(disp_data, trait_name%in%c("contact-infectiousness","virulence-recovery")), aes(x=disp))+
   geom_density(aes(group=Variance,color=Variance,fill=Variance),lwd=.5, alpha=.9)+
@@ -199,13 +205,16 @@ dev.off()
 
 data %>% group_by(Variance, cov_sign, trait_name) %>% summarise(maxpeak=max(peak)) -> max_peak_dat
 
-inter_peak<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), aes(x=peak))+
+data %>% group_by(Variance, cov_sign, trait_name) %>% summarise(pr=(sum(fadeout))/100) %>% 
+  mutate(., x=150, y=.75) %>%mutate(., pr_name=paste0("pr=",pr))-> pr_fade
+
+
+ggplot(data, aes(x=peak))+
   stat_ecdf(aes(color=Variance),size=1.5, alpha=0.8)+
-  geom_point(data=subset(max_peak_dat, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), mapping=aes(x=maxpeak, y=1, shape=Variance),size=3,alpha=0.7)+
+  #geom_point(data=subset(max_peak_dat, trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), mapping=aes(x=maxpeak, y=1, shape=Variance),size=3,alpha=0.7)+
   facet_grid(cov_sign~trait_name)+
-  scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   theme_bw()+
-  labs(y="% of simulations", x="Peak", title= "Intergroup Trait Pairings")+
+  labs(y="% of simulations", x="Epidemic Peak", title= "Emprical Cumulative Distribution Function", subtitle = "Intragroup                                                     Intergroup")+
   theme(text = element_text(size=15),
         plot.title = element_text(hjust = 0.5),
         plot.margin = margin(t = 10,  # Top margin
@@ -213,7 +222,21 @@ inter_peak<-ggplot(subset(data, trait_name%in%c("contact-virulence","contact-rec
                              b = 10,  # Bottom margin
                              l = 10),
         legend.key.size = unit(1,'cm'),
-        legend.key.width = unit(1.5,'cm'))
+        legend.key.width = unit(1.5,'cm'))+
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
+  geom_label(data=subset(pr_fade, Variance=="low"), #& trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), 
+              mapping=aes(x=x+5, 
+                          y=y,
+                          label=pr_name, color=Variance), show.legend = FALSE,size =3)+
+  geom_label(data=subset(pr_fade, Variance=="moderate"), #& trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), 
+            mapping=aes(x=x+5, 
+                        y=y-.15,
+                        label=pr_name, color=Variance), show.legend = FALSE,size =3)+
+  geom_label(data=subset(pr_fade, Variance=="high"), #& trait_name%in%c("contact-virulence","contact-recovery", "infectiousness-virulence", "infectiousness-recovery")), 
+            mapping=aes(x=x+5, 
+                        y=y-.3,
+                        label=pr_name, color=Variance), show.legend = FALSE,size =3)
+
 
 pdf("inter_peak_R1_plot.pdf", width = 16, height = 12)
 print(inter_peak) 
@@ -233,7 +256,48 @@ intra_peak<-ggplot(subset(data, trait_name%in%c("virulence-recovery", "contact-i
                              b = 10,  # Bottom margin
                              l = 10),
         legend.key.size = unit(1,'cm'),
-        legend.key.width = unit(1.5,'cm'))
+        legend.key.width = unit(1.5,'cm'))+
+  geom_label(data=subset(pr_fade, Variance=="low" & trait_name%in%c("virulence-recovery", "contact-infectiousness")), 
+             mapping=aes(x=x, 
+                         y=y,
+                         label=pr_name, color=Variance), show.legend = FALSE, size =6)+
+  geom_label(data=subset(pr_fade, Variance=="moderate" & trait_name%in%c("virulence-recovery", "contact-infectiousness")), 
+             mapping=aes(x=x, 
+                         y=y-.15,
+                         label=pr_name, color=Variance), show.legend = FALSE,size =6)+
+  geom_label(data=subset(pr_fade, Variance=="high" & trait_name%in%c("virulence-recovery", "contact-infectiousness")), 
+             mapping=aes(x=x, 
+                         y=y-.3,
+                         label=pr_name, color=Variance), show.legend = FALSE,size =6)
+
+ggplot(subset(data, Covariance =="none" & trait_name%in%c("virulence-recovery")), aes(x=peak))+
+  stat_ecdf(aes(color=Variance),size=1.5, alpha=0.8)+
+  geom_point(data=subset(max_peak_dat,cov_sign=="(0)" & trait_name%in%c("virulence-recovery")), mapping=aes(x=maxpeak, y=1,shape=Variance),size=3)+
+  #facet_grid(cov_sign~trait_name)+
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
+  theme_bw()+
+  labs(y="% of simulations", x="Peak", title = "virulence-recovery")+
+  theme(text = element_text(size=15),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10,  # Top margin
+                             r = 20,  # Right margin
+                             b = 10,  # Bottom margin
+                             l = 10),
+        legend.key.size = unit(1,'cm'),
+        legend.key.width = unit(1.5,'cm'))+
+  geom_label(data=subset(pr_fade, Variance=="low" & trait_name%in%c("virulence-recovery")), 
+             mapping=aes(x=x-25, 
+                         y=y,
+                         label=pr_name, color=Variance), show.legend = FALSE, size =6)+
+  geom_label(data=subset(pr_fade, Variance=="moderate" & trait_name%in%c("virulence-recovery")), 
+             mapping=aes(x=x-25, 
+                         y=y-.15,
+                         label=pr_name, color=Variance), show.legend = FALSE,size =6)+
+  geom_label(data=subset(pr_fade, Variance=="high" & trait_name%in%c("virulence-recovery")), 
+             mapping=aes(x=x-25, 
+                         y=y-.3,
+                         label=pr_name, color=Variance), show.legend = FALSE,size =6)
+
 
 pdf("intra_peak_R1_plot.pdf", width = 16, height = 12)
 print(intra_peak) 
@@ -275,6 +339,7 @@ dispXpeak_plot<-ggplot(subset(data, trait_name%in%c("virulence-recovery","contac
   facet_grid(~trait_name)+
   theme_bw()+
   labs(y="Peak", x="Dispersion (*k*)")+
+  ylim(90, 195)+
   scale_color_manual(values=c("cornflowerblue", "pink", "sienna3"))+
   theme(text = element_text(size=15),
         strip.text.x = element_text(size = 10),
@@ -289,7 +354,7 @@ dispXpeak_plot<-ggplot(subset(data, trait_name%in%c("virulence-recovery","contac
         axis.title.x = ggtext::element_markdown())+
   geom_vline(xintercept = 0.16, linetype="dashed")
 
-pdf("dispXpeak_plot.pdf", width =10, height = 7)
+pdf("dispXpeak_plot.pdf", width =10, height = 6)
 print(dispXpeak_plot) 
 dev.off() 
 
