@@ -51,7 +51,6 @@ for (R in c(8,4,1)) {
   }
 }
 
-
 # var1=c('c','c','c','shed','shed','alpha')
 # var2=c('shed','alpha','gamma','alpha','gamma','gamma')
 # i <- 1
