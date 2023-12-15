@@ -54,9 +54,9 @@ data$cov <- factor(data$cov, levels=c("(-) Cov","(0) Cov","(+) Cov"))
 data$Variance <- factor(data$Variance, levels=c("low","med","high"))
 data$traits <- factor(data$traits, levels=c("Contact-Recovery","Contact-Virulence","Infectiousness-Recovery","Infectiousness-Virulence","Contact-Infectiousness","Virulence-Recovery"))
 # compute the fraction of replicates that make it to each epidemic size
-data %>% group_by(Variance, cov, traits) %>% summarise(size=seq(0,max(data$peakSize)+2), ECDF=sapply(seq(0,max(data$peakSize)+2), function(i) sum(peakSize>=i)/100)) -> data2
+data %>% group_by(Variance, cov, traits) %>% reframe(size=seq(0,max(data$peakSize)+2), ECDF=sapply(seq(0,max(data$peakSize)+2), function(i) sum(peakSize>=i)/100)) -> data2
 # compute the fraction of replicates that make it to each epidemic prevalence
-data %>% group_by(Variance, cov, traits) %>% summarise(size=seq(0,max(data$peakPrev)+0.02,0.01), ECDF=sapply(seq(0,max(data$peakPrev)+0.02,0.01), function(i) sum(peakPrev>=i)/100)) -> data3
+data %>% group_by(Variance, cov, traits) %>% reframe(size=seq(0,max(data$peakPrev)+0.02,0.01), ECDF=sapply(seq(0,max(data$peakPrev)+0.02,0.01), function(i) sum(peakPrev>=i)/100)) -> data3
 
 png(filename="./All_ECDF_R0=1.png", height=6.5, width=9, units='in', res=300)
 ggplot(data2, aes(x=size, y=ECDF, group=Variance, colour=Variance)) + 
