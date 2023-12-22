@@ -123,67 +123,92 @@ for (i in 1:10)
 toc <- Sys.time()
 toc - tic
 
-tic <- Sys.time()
-for (i in 1:10) 
-  out = SIRcovCS(params, x, 50)
-toc <- Sys.time()
-toc - tic
-
-tic <- Sys.time()
-gillespie.SIR.cov_storage(tmax=50, 
-                          params=paramsR, 
-                          corr=0.5, 
-                          x=x, 
-                          covParams=c("c","shed"),
-                          seed=floor(runif(1,0,1e6))) -> outR
-toc <- Sys.time()
-toc - tic
-
-
-tic <- Sys.time()
-out = SIRcovCS(params, x, 50)
-toc <- Sys.time()
-toc - tic
-
-
-## Stochastic run in Rcpp
-sourceCpp("SIRcov.cpp")
-## No variation simulations
 paramsCS = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              cSD=0.0001, sSD=0.0001,
              corr=0.5)
-outCS = SIRcovCS(params, x, 50)
+tic <- Sys.time()
+for (i in 1:10) 
+  out = SIRcovCS(params, c(S=230, I=10, R=0), 50)
+toc <- Sys.time()
+toc - tic
+
+## Stochastic run in Rcpp
+sourceCpp("SIRcov.cpp")
+x = c(S=230, I=10, R=0)
+
+## No variation simulations (should all be very similar)
+paramsCS = c(b=2.5, bs=0.01, d=0.1, 
+             c=0.1, s=1/9, a=0.1, g=0.1,
+             cSD=0.0001, sSD=0.0001,
+             corr=0.5)
+tic <- Sys.time()
+for (i in 1:10) 
+  outCS = SIRcovCS(paramsCS, x, 100)
+toc <- Sys.time()
+toc - tic
+
+tic <- Sys.time()
+for (i in 1:10) 
+  outCS = SIRcovCS2(paramsCS, x, 100)
+toc <- Sys.time()
+toc - tic
+
 
 paramsCA = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              cSD=0.0001, aSD=0.0001,
              corr=0.5)
-outCA = SIRcovCA(params, x, 50)
+outCA = SIRcovCA(paramsCA, x, 50)
 
 paramsCG = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              cSD=0.0001, gSD=0.0001,
              corr=0.5)
-outCG = SIRcovCG(params, x, 50)
+outCG = SIRcovCG(paramsCG, x, 50)
 
 paramsSA = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              sSD=0.0001, aSD=0.0001,
              corr=0.5)
-outSA = SIRcovSA(params, x, 50)
+outSA = SIRcovSA(paramsSA, x, 50)
 
 paramsSG = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              sSD=0.0001, gSD=0.0001,
              corr=0.5)
-outSG = SIRcovSG(params, x, 50)
+outSG = SIRcovSG(paramsSG, x, 50)
 
 paramsAG = c(b=2.5, bs=0.01, d=0.1, 
              c=0.1, s=1/9, a=0.1, g=0.1,
              aSD=0.0001, gSD=0.0001,
              corr=0.5)
-outAG = SIRcovAG(params, x, 50)
+outAG = SIRcovAG(paramsAG, x, 50)
+
+paramsC = c(b=2.5, bs=0.01, d=0.1, 
+             c=0.1, s=1/9, a=0.1, g=0.1,
+             cSD=0.0001)
+outC = SIRvarC(paramsC, x, 50)
+
+paramsS = c(b=2.5, bs=0.01, d=0.1, 
+            c=0.1, s=1/9, a=0.1, g=0.1,
+            sSD=0.0001)
+outS = SIRvarS(paramsS, x, 50)
+
+paramsA = c(b=2.5, bs=0.01, d=0.1, 
+            c=0.1, s=1/9, a=0.1, g=0.1,
+            aSD=0.0001)
+outA = SIRvarA(paramsA, x, 50)
+
+paramsG = c(b=2.5, bs=0.01, d=0.1, 
+            c=0.1, s=1/9, a=0.1, g=0.1,
+            gSD=0.0001)
+outG = SIRvarG(paramsG, x, 50)
+
+params0 = c(b=2.5, bs=0.01, d=0.1, 
+            c=0.1, s=1/9, a=0.1, g=0.1)
+out0 = SIRnovar(params0, x, 50)
+
 
 par(mfrow=c(1,1), mar=c(4,4,0.5,0.5), oma=rep(0.5,4))
 plot(outCS[[1]], outCS[[2]][,2], type='l', xlab="Time", ylab="No. infected")
@@ -192,5 +217,10 @@ lines(outCG[[1]], outCG[[2]][,2], col=3)
 lines(outSA[[1]], outSA[[2]][,2], col=4)
 lines(outSG[[1]], outSG[[2]][,2], col=5)
 lines(outAG[[1]], outAG[[2]][,2], col=6)
+lines(outC[[1]], outC[[2]][,2], col=7)
+lines(outS[[1]], outS[[2]][,2], col=8)
+lines(outA[[1]], outA[[2]][,2], col=9)
+lines(outG[[1]], outG[[2]][,2], col=10)
+lines(out0[[1]], out0[[2]][,2], col=11)
 
 
