@@ -147,33 +147,159 @@ lapply(outC,
                                      NA))
                 ) %>% do.call("rbind.data.frame",.)
        ) -> OutC
+OutC %<>% do.call("rbind.data.frame",.)
+OutC$R0 <- rep(paste0("R0=",c(1,4,8)), each=3000)
+OutC$CV <- rep(rep(paste0("CV=",c(0.2,1,5)), each=1000),3)
+saveRDS(OutC, file="Variance_in_contact_results_12-28-23.RDS")
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+png(file="Variance_in_contact_peaks.png", height=3, width=5, units='in', res=300)
+ggplot(OutC, aes(x=peak, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) + 
+  theme_bw() + 
+  theme(legend.position="bottom")
+dev.off()
+
+png(file="Variance_in_contact_dispersion.png", height=3, width=5, units='in', res=300)
+ggplot(OutC, aes(x=disp, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  xlim(0,1.5)  
+dev.off()
+
+
+lapply(outS, 
+       function(O)
+         lapply(O, 
+                function(o)
+                  data.frame(peak=max(o[[2]][,2]),
+                             totalI=sum(o[[3]][,3]),
+                             fadeout=ifelse(any(o[[2]][,2]==0),1,0),
+                             fadeoutT=ifelse(any(o[[2]][,2]==0),o[[1]][min(which(o[[2]][,2]==0))],50)) %>%
+                  mutate(., ## compute the dispersion parameter for each run that did not fade out
+                         disp=ifelse(fadeout==0, 
+                                     ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                            NA, 
+                                            glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta), 
+                                     NA))
+         ) %>% do.call("rbind.data.frame",.)
+) -> OutS
+OutS %<>% do.call("rbind.data.frame",.)
+OutS$R0 <- rep(paste0("R0=",c(1,4,8)), each=3000)
+OutS$CV <- rep(rep(paste0("CV=",c(0.2,1,5)), each=1000),3)
+saveRDS(OutS, file="Variance_in_shedding_results_12-28-23.RDS")
+
+png(file="Variance_in_shedding_peaks.png", height=3, width=5, units='in', res=300)
+ggplot(OutS, aes(x=peak, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) + 
+  theme_bw() + 
+  theme(legend.position="bottom")
+dev.off()
+
+png(file="Variance_in_shedding_dispersion.png", height=3, width=5, units='in', res=300)
+ggplot(OutS, aes(x=disp, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  xlim(0,1.5)  
+dev.off()
+
+
+
+lapply(outA, 
+       function(O)
+         lapply(O, 
+                function(o)
+                  data.frame(peak=max(o[[2]][,2]),
+                             totalI=sum(o[[3]][,3]),
+                             fadeout=ifelse(any(o[[2]][,2]==0),1,0),
+                             fadeoutT=ifelse(any(o[[2]][,2]==0),o[[1]][min(which(o[[2]][,2]==0))],50)) %>%
+                  mutate(., ## compute the dispersion parameter for each run that did not fade out
+                         disp=ifelse(fadeout==0, 
+                                     ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                            NA, 
+                                            glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta), 
+                                     NA))
+         ) %>% do.call("rbind.data.frame",.)
+) -> OutA
+OutA %<>% do.call("rbind.data.frame",.)
+OutA$R0 <- rep(paste0("R0=",c(1,4,8)), each=3000)
+OutA$CV <- rep(rep(paste0("CV=",c(0.2,1,5)), each=1000),3)
+saveRDS(OutA, file="Variance_in_virulence_results_12-28-23.RDS")
+
+png(file="Variance_in_virulence_peaks.png", height=3, width=5, units='in', res=300)
+ggplot(OutA, aes(x=peak, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) + 
+  theme_bw() + 
+  theme(legend.position="bottom")
+dev.off()
+
+png(file="Variance_in_virulence_dispersion.png", height=3, width=5, units='in', res=300)
+ggplot(OutA, aes(x=disp, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  xlim(0,1.5)  
+dev.off()
+
+
+
+lapply(outG, 
+       function(O)
+         lapply(O, 
+                function(o)
+                  data.frame(peak=max(o[[2]][,2]),
+                             totalI=sum(o[[3]][,3]),
+                             fadeout=ifelse(any(o[[2]][,2]==0),1,0),
+                             fadeoutT=ifelse(any(o[[2]][,2]==0),o[[1]][min(which(o[[2]][,2]==0))],50)) %>%
+                  mutate(., ## compute the dispersion parameter for each run that did not fade out
+                         disp=ifelse(fadeout==0, 
+                                     ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                            NA, 
+                                            glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta), 
+                                     NA))
+         ) %>% do.call("rbind.data.frame",.)
+) -> OutG
+OutG %<>% do.call("rbind.data.frame",.)
+OutG$R0 <- rep(paste0("R0=",c(1,4,8)), each=3000)
+OutG$CV <- rep(rep(paste0("CV=",c(0.2,1,5)), each=1000),3)
+saveRDS(OutG, file="Variance_in_recovery_results_12-28-23.RDS")
+
+png(file="Variance_in_recovery_peaks.png", height=3, width=5, units='in', res=300)
+ggplot(OutG, aes(x=peak, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) + 
+  theme_bw() + 
+  theme(legend.position="bottom")
+dev.off()
+
+png(file="Variance_in_recovery_dispersion.png", height=3, width=5, units='in', res=300)
+ggplot(OutG, aes(x=disp, group=CV, fill=CV)) + 
+  geom_histogram() + 
+  facet_grid(~R0) + 
+  scale_fill_manual(values=cbPalette) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  xlim(0,1.5)  
+dev.off()
+
+
+
+
          
 
- 
-  
-  
-  var1=c('c','c','c','shed','shed','alpha')
-  var2=c('shed','alpha','gamma','alpha','gamma','gamma')
-  
-  for (j in 1:6) { ## loop over the six different covariance combinations
-    for (corr in c("nocorr", "negcorr", "poscorr")) {
-      for (varLevel in c("hivar","medvar","lowvar")) {
-        print(paste("out",corr,varLevel,var1[j],var2[j],sep="_"))
-        mclapply(seeds, 
-                 function(i) gillespie.SIR.cov_storage(tmax=100, 
-                                                       params=get(varLevel), 
-                                                       corr=get(corr), 
-                                                       x=initial_state, 
-                                                       covParams=c(var1[j],var2[j]),
-                                                       seed=i),
-                 mc.cores=10) -> z
-        saveRDS(z, file=paste0(paste(paste0("out_R=",R),corr,varLevel,var1[j],var2[j],sep="_"),".RDS"))
-      }
-    }
-  }
-}
-
-secInf = (o[[3]][is.na(o[[3]][,3]),2])
-fit = fitdistr((o[[3]][is.na(o[[3]][,3]),2]), "negative binomial")
-hist(secInf, prob=TRUE, main="")
-lines(seq(0,15), dnbinom(seq(0,15), size = fit$estimate[1], mu = fit$estimate[2]), lwd=2, col=2)
