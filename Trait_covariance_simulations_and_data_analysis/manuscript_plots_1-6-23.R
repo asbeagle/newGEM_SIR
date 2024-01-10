@@ -176,30 +176,39 @@ for (j in 1:6) { ## loop over the six different covariance combinations
     
     z <- vector(mode='list',length=3)
     lapply(1:length(z1), function(i) data.frame(peakSize=max(z1[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
-                                                peakPrev=max(z1[[i]][[1]]$I/(z1[[i]][[1]]$S+z1[[i]][[1]]$I+z1[[i]][[1]]$R),na.rm=TRUE),
+                                                peakPrev=max(z1[[i]][[1]]$I/(z1[[i]][[1]]$S+z1[[i]][[1]]$I+z1[[i]][[1]]$R),na.rm=TRUE), ## peak prevalence
+                                                varR=var(filter(z1[[i]][[2]],is.finite(tEnd))$numInf),
+                                                numSSE=sum(filter(z1[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4)),
+                                                propSSE=sum(filter(z1[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4))/(filter(z1[[i]][[2]],is.finite(tEnd)) %>% nrow),
                                                 fadeout=ifelse(length(z1[[i]][[1]]$t)<99, 1, 0)) %>% # binary: did this replicate go extinct?
-                                                mutate(.,
-                                                       disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(z1[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z1[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(z1[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z1[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       rep=i)) %>% 
+             mutate(.,
+                    disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(filter(z1[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z1[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(filter(z1[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z1[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    rep=i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="high",cov=covMatrix, traits=paste(trait1,trait2,sep="-"), panelLab=panel) -> z[[1]]
     lapply(1:length(z2), function(i) data.frame(peakSize=max(z2[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
-                                                peakPrev=max(z2[[i]][[1]]$I/(z2[[i]][[1]]$S+z2[[i]][[1]]$I+z2[[i]][[1]]$R),na.rm=TRUE),
+                                                peakPrev=max(z2[[i]][[1]]$I/(z2[[i]][[1]]$S+z2[[i]][[1]]$I+z2[[i]][[1]]$R),na.rm=TRUE), ## peak prevalence
+                                                varR=var(filter(z2[[i]][[2]],is.finite(tEnd))$numInf),
+                                                numSSE=sum(filter(z2[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4)),
+                                                propSSE=sum(filter(z2[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4))/(filter(z2[[i]][[2]],is.finite(tEnd)) %>% nrow),
                                                 fadeout=ifelse(length(z2[[i]][[1]]$t)<99, 1, 0)) %>% # binary: did this replicate go extinct?
-                                                mutate(., 
-                                                       disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(z2[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z2[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(z2[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z2[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       rep=i)) %>% 
+             mutate(.,
+                    disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(filter(z2[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z2[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(filter(z2[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z2[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    rep=i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="med",cov=covMatrix, traits=paste(trait1,trait2,sep="-"), panelLab=panel) -> z[[2]]
     lapply(1:length(z3), function(i) data.frame(peakSize=max(z3[[i]][[1]]$I,na.rm=TRUE), ## peak epidemic size
-                                                peakPrev=max(z3[[i]][[1]]$I/(z3[[i]][[1]]$S+z3[[i]][[1]]$I+z3[[i]][[1]]$R),na.rm=TRUE),
+                                                peakPrev=max(z3[[i]][[1]]$I/(z3[[i]][[1]]$S+z3[[i]][[1]]$I+z3[[i]][[1]]$R),na.rm=TRUE), ## peak prevalence
+                                                varR=var(filter(z3[[i]][[2]],is.finite(tEnd))$numInf),
+                                                numSSE=sum(filter(z3[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4)),
+                                                propSSE=sum(filter(z3[[i]][[2]],is.finite(tEnd))$numInf > qpois(0.99,4))/(filter(z3[[i]][[2]],is.finite(tEnd)) %>% nrow),
                                                 fadeout=ifelse(length(z3[[i]][[1]]$t)<99, 1, 0)) %>% # binary: did this replicate go extinct?
-                                                mutate(., 
-                                                       disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(z3[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z3[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(z3[[i]][[2]]$numInf~1)$theta),'try-error'), NA, glm.nb(z3[[i]][[2]]$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
-                                                       rep=i)) %>% 
+             mutate(.,
+                    disp=ifelse(fadeout==0, ifelse(inherits(try(glm.nb(filter(z3[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z3[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    dispAlt=ifelse(peakSize > 10, ifelse(inherits(try(glm.nb(filter(z3[[i]][[2]],is.finite(tEnd))$numInf~1)$theta),'try-error'), NA, glm.nb(filter(z3[[i]][[2]],is.finite(tEnd))$numInf~1)$theta), NA), ## dispersion parameter of negative binomial distribution fit to numInf
+                    rep=i)) %>% 
       do.call("rbind.data.frame",.) %>%
       mutate(., Variance="low",cov=covMatrix, traits=paste(trait1,trait2,sep="-"), panelLab=panel) -> z[[3]]
     data[[i]] <- do.call("rbind.data.frame",z)
@@ -211,18 +220,9 @@ data$cov <- factor(data$cov, levels=c("(-) Cov","(0) Cov","(+) Cov"))
 data$Variance <- factor(data$Variance, levels=c("low","med","high"))
 data$traits <- factor(data$traits, levels=c("Contact-Recovery","Contact-Virulence","Infectiousness-Recovery","Infectiousness-Virulence","Contact-Infectiousness","Virulence-Recovery"))
 # compute the fraction of replicates that make it to each epidemic size
-data %>% group_by(Variance, cov, traits) %>% summarise(size=seq(0,max(data$peakSize)+2), ECDF=sapply(seq(0,max(data$peakSize)+2), function(i) sum(peakSize>=i)/100)) -> data2
+data %>% group_by(Variance, cov, traits) %>% reframe(size=seq(0,max(data$peakSize)+2), ECDF=sapply(seq(0,max(data$peakSize)+2), function(i) sum(peakSize>=i)/100)) -> data2
 # compute the fraction of replicates that make it to each epidemic prevalence
-data %>% group_by(Variance, cov, traits) %>% summarise(size=seq(0,max(data$peakPrev)+0.02,0.01), ECDF=sapply(seq(0,max(data$peakPrev)+0.02,0.01), function(i) sum(peakPrev>=i)/100)) -> data3
-
-
-subset(data, traits=="Contact-Recovery" & cov=="(-) Cov" & Variance=="high")$disp
-subset(data, traits=="Contact-Recovery" & cov=="(-) Cov" & Variance=="med")$disp
-
-data %>% group_by(traits, cov, Variance) %>% summarise(meanDisp=mean(dispAlt,na.rm=T), meanPeak=mean(peakSize), fadeoutFrac=sum(fadeout==1)/100) %>% 
-  ggplot(., aes(x=meanDisp, y=fadeoutFrac, color=Variance, fill=Variance)) + 
-  geom_point() + 
-  facet_grid(cov~traits)
+data %>% group_by(Variance, cov, traits) %>% reframe(size=seq(0,max(data$peakPrev)+0.02,0.01), ECDF=sapply(seq(0,max(data$peakPrev)+0.02,0.01), function(i) sum(peakPrev>=i)/100)) -> data3
 
 png(filename="./All_ECDF_R0=4.png", height=6.5, width=9, units='in', res=300)
 ggplot(data2, aes(x=size, y=ECDF, group=Variance, colour=Variance)) + 
@@ -290,6 +290,46 @@ ggplot(data, aes(x=dispAlt)) +
   scale_color_manual(values=c("cornflowerblue", "pink", "sienna")) +
   scale_fill_manual(values=c("cornflowerblue", "pink", "sienna")) 
 dev.off()
+
+ggplot(data, aes(x=dispAlt)) + 
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),alpha=0.3,position='identity') +
+  facet_grid(cov~traits)
+
+
+ggplot(data, aes(x=numSSE)) + 
+  geom_density(aes(group=Variance,color=Variance,fill=Variance),alpha=0.3,position='identity') +
+  facet_grid(cov~traits)
+
+png(filename="./All_peak_against_numSSE_R0=4.png", height=4, width=9, units='in', res=300)
+ggplot(mutate(data, Covariance=cov), aes(x=numSSE, y=peakSize, shape=Variance, color=Covariance)) + 
+  geom_point(size=0.8) + 
+  facet_grid(~traits) +
+  geom_text(data=subset(mutate(data, Covariance=cov) %>% group_by(Variance, Covariance, traits) %>% summarise(pan=unique(strsplit(panelLab,"\\(")[[1]][1])),Variance=='high' & Covariance=="(0) Cov"),
+            mapping=aes(x=0.075, y=203, label=pan),color='black', size=2.5, hjust=0) +  
+  xlab(expression(Dispersion~(italic(k)))) +
+  ylab(expression(Peak~size~(italic(R)[0]==4))) + 
+  ggtitle("Intergroup trait pairings                                                                                                                               Intragroup trait pairings") + 
+  theme_bw() + 
+  theme(axis.text=element_text(size=6), axis.title=element_text(size=8), legend.text=element_text(size=7), legend.title=element_text(size=8), plot.title = element_text(size=8), strip.text.x = element_text(size = 7), strip.text.y = element_text(size = 7)) +
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna")) +
+  scale_fill_manual(values=c("cornflowerblue", "pink", "sienna")) 
+dev.off()
+
+png(filename="./All_peak_against_propSSE_R0=4.png", height=4, width=9, units='in', res=300)
+ggplot(mutate(data, Covariance=cov), aes(x=propSSE, y=peakSize, shape=Variance, color=Covariance)) + 
+  geom_point(size=0.8) + 
+  facet_grid(~traits) +
+  geom_text(data=subset(mutate(data, Covariance=cov) %>% group_by(Variance, Covariance, traits) %>% summarise(pan=unique(strsplit(panelLab,"\\(")[[1]][1])),Variance=='high' & Covariance=="(0) Cov"),
+            mapping=aes(x=0.075, y=203, label=pan),color='black', size=2.5, hjust=0) +  
+  xlab(expression(Dispersion~(italic(k)))) +
+  ylab(expression(Peak~size~(italic(R)[0]==4))) + 
+  ggtitle("Intergroup trait pairings                                                                                                                               Intragroup trait pairings") + 
+  theme_bw() + 
+  theme(axis.text=element_text(size=6), axis.title=element_text(size=8), legend.text=element_text(size=7), legend.title=element_text(size=8), plot.title = element_text(size=8), strip.text.x = element_text(size = 7), strip.text.y = element_text(size = 7)) +
+  scale_color_manual(values=c("cornflowerblue", "pink", "sienna")) +
+  scale_fill_manual(values=c("cornflowerblue", "pink", "sienna")) 
+dev.off()
+
 
 png(filename="./All_peak_against_dispersion_R0=4.png", height=4, width=9, units='in', res=300)
 ggplot(mutate(data, Covariance=cov), aes(x=dispAlt, y=peakSize, shape=Variance, color=Covariance)) + 
