@@ -13,7 +13,7 @@ var2=c('s','a','g','a','g','g')
 
 for (R in c(1,4,8)) {
   for (CV in c(.2, 1, 5)) {
-    for (corr in seq(-0.6, 0.9, 0.1)) {
+    for (corr in seq(-0.9, -0.7, 0.1)) {
       for (parcomb in seq(1,6)) {
         print(CV)
         print(R)
