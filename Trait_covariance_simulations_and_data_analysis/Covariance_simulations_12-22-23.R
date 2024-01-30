@@ -13,14 +13,14 @@ var2=c('s','a','g','a','g','g')
 
 for (R in c(1,4,8)) {
   for (CV in c(.2, 1, 5)) {
-    for (corr in seq(-0.6, 0.9, 0.1)) {
+    for (corr in seq(-0.9, 0.9, 0.1)) {
       for (parcomb in seq(1,6)) {
         print(CV)
         print(R)
         print(corr)
         print(var1[parcomb])
         print(var2[parcomb])
-        
+        corr = round(corr,1) ## force to be precisely the correct value
         ## baseline parameters
         b = 2.5; bs=0.01; d=0.1; c=0.1; s=1/9; a=0.1; g=0.1
         ## scaling coefficient x to scale c, s, a, and g to achieve particular R value

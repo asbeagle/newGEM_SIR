@@ -1,5 +1,11 @@
 ## example plots for SS MS
 
+dd1 = readRDS("out_R0=8_CV=1_corr=-0.6_cov=c-s.RDS")
+
+dd2 = readRDS("out_R0=8_CV=1_corr=0.9_cov=c-s.RDS")
+
+t.test(dd1$peak, dd2$peak)
+
 # r04, nocorr, medvar, contact/shed
 dat<-readRDS("out_R=4_nocorr_medvar_c_shed.RDS")
 
