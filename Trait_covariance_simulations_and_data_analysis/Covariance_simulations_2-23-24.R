@@ -7,82 +7,212 @@ library(magrittr)
 library(parallel)
 sourceCpp("SIRcov2.cpp")
 
-var1=c('c','c','c','s','s','a')
-var2=c('s','a','g','a','g','g')
-
+# var1=c('c','c','c','s','s','a')
+# var2=c('s','a','g','a','g','g')
+# 
+# for (R in c(1,2,4,8)) {
+#   for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
+#     for (CV in c(.2, 1, 5)) {
+#       for (corr in seq(-0.9, 0.9, 0.1)) {
+#         for (parcomb in seq(1,6)) {
+#           print(R)
+#           print(S)
+#           print(CV)
+#           print(corr)
+#           print(var1[parcomb])
+#           print(var2[parcomb])
+#           corr = round(corr,1) ## force to be precisely the correct value
+#           ## baseline parameters
+#           params = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S,
+#                      SD1=0, SD2=0, corr=corr)
+#           params["SD1"] = unname(CV*params[var1[parcomb]])
+#           params["SD2"] = unname(CV*params[var2[parcomb]])
+#         
+#           ## initial conditions
+#           initial_state <- c(S=S, I=S/50, R=0)
+#           ## simulate!
+#           if (parcomb==1)
+#             mclapply(1:1000,
+#                      function(i) SIRcovCS(params, initial_state),
+#                      mc.cores=10) -> out
+#           else if (parcomb==2)
+#             mclapply(1:1000,
+#                      function(i) SIRcovCA(params, initial_state),
+#                      mc.cores=10) -> out
+#           else if (parcomb==3)
+#             mclapply(1:1000,
+#                      function(i) SIRcovCG(params, initial_state),
+#                      mc.cores=10) -> out
+#           else if (parcomb==4)
+#             mclapply(1:1000,
+#                      function(i) SIRcovSA(params, initial_state),
+#                      mc.cores=10) -> out
+#           else if (parcomb==5)
+#             mclapply(1:1000,
+#                      function(i) SIRcovSG(params, initial_state),
+#                      mc.cores=10) -> out
+#           else 
+#             mclapply(1:1000,
+#                      function(i) SIRcovAG(params, initial_state),
+#                      mc.cores=10) -> out
+#         
+#           ## Because out is very, very large, it must be analyzed before saving
+#           lapply(out, 
+#                  function(o)
+#                    data.frame(peak=max(o[[2]][,2]),
+#                               totalI=sum(o[[3]][,4]),
+#                               tEnd=tail(o[[1]],1),
+#                               disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,5]),4])~1), silent=TRUE),"try-error"), 
+#                                           NA, 
+#                                           glm.nb((o[[3]][is.na(o[[3]][,5]),4])~1)$theta))
+#           ) %>% 
+#             do.call("rbind.data.frame",.) %>%
+#             mutate(rep=1:1000, 
+#                    R0=R,
+#                    S=S,
+#                    CV=CV,
+#                    corr=corr, 
+#                    cov=paste0(var1[parcomb],"-",var2[parcomb])) -> outSummary
+#           
+#         
+#         saveRDS(outSummary, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_corr=",corr,"_cov=",var1[parcomb],"-",var2[parcomb],".RDS"))
+#         rm(out) ## prevents accidentally saving the same thing twice and saves some storage space
+#         rm(outSummary)
+#         }
+#       }
+#     }
+#   }
+# }
+# 
+# for (R in c(1,2,4,8)) {
+#   for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
+#     print(R)
+#     print(S)
+#     initial_state <- c(S=S, I=S/50, R=0)
+#     params = c(c=R/500, s=R/(500-R), a=R/500, g=R/500)
+#     mclapply(1:1000,
+#              function(i) SIRnovar(params, initial_state),
+#              mc.cores=10) -> out
+#     
+#     lapply(out, 
+#            function(o)
+#              data.frame(peak=max(o[[2]][,2]),
+#                         totalI=sum(o[[3]][,2]),
+#                         tEnd=tail(o[[1]],1),
+#                         disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1), silent=TRUE),"try-error"), 
+#                                     NA, 
+#                                     glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1)$theta))
+#     ) %>% 
+#       do.call("rbind.data.frame",.) %>%
+#       mutate(rep=1:1000, 
+#              R0=R,
+#              S=S) -> outSummary
+#     
+#     saveRDS(outSummary, file=paste0("out_R0=",R,"_S=",S,"_no_variation.RDS"))
+#   }
+# }
+#     
 for (R in c(1,2,4,8)) {
   for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
     for (CV in c(.2, 1, 5)) {
-      for (corr in seq(-0.9, 0.9, 0.1)) {
-        for (parcomb in seq(1,6)) {
-          print(R)
-          print(S)
-          print(CV)
-          print(corr)
-          print(var1[parcomb])
-          print(var2[parcomb])
-          corr = round(corr,1) ## force to be precisely the correct value
-          ## baseline parameters
-          params = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S,
-                     SD1=0, SD2=0, corr=corr)
-          params["SD1"] = unname(CV*params[var1[parcomb]])
-          params["SD2"] = unname(CV*params[var2[parcomb]])
-        
-          ## initial conditions
-          initial_state <- c(S=S, I=S/50, R=0)
-          ## simulate!
-          if (parcomb==1)
-            mclapply(1:1000,
-                     function(i) SIRcovCS(params, initial_state),
-                     mc.cores=10) -> out
-          else if (parcomb==2)
-            mclapply(1:1000,
-                     function(i) SIRcovCA(params, initial_state),
-                     mc.cores=10) -> out
-          else if (parcomb==3)
-            mclapply(1:1000,
-                     function(i) SIRcovCG(params, initial_state),
-                     mc.cores=10) -> out
-          else if (parcomb==4)
-            mclapply(1:1000,
-                     function(i) SIRcovSA(params, initial_state),
-                     mc.cores=10) -> out
-          else if (parcomb==5)
-            mclapply(1:1000,
-                     function(i) SIRcovSG(params, initial_state),
-                     mc.cores=10) -> out
-          else 
-            mclapply(1:1000,
-                     function(i) SIRcovAG(params, initial_state),
-                     mc.cores=10) -> out
-        
-          ## Because out is very, very large, it must be analyzed before saving
-          lapply(out, 
-                 function(o)
-                   data.frame(peak=max(o[[2]][,2]),
-                              totalI=sum(o[[3]][,4]),
-                              tEnd=tail(o[[1]],1),
-                              disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,5]),4])~1), silent=TRUE),"try-error"), 
-                                          NA, 
-                                          glm.nb((o[[3]][is.na(o[[3]][,5]),4])~1)$theta))
-          ) %>% 
-            do.call("rbind.data.frame",.) %>%
-            mutate(rep=1:1000, 
-                   R0=R,
-                   S=S,
-                   CV=CV,
-                   corr=corr, 
-                   cov=paste0(var1[parcomb],"-",var2[parcomb])) -> outSummary
-          
-        
-        saveRDS(outSummary, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_corr=",corr,"_cov=",var1[parcomb],"-",var2[parcomb],".RDS"))
-        rm(out) ## prevents accidentally saving the same thing twice and saves some storage space
-        rm(outSummary)
-        }
-      }
+      print(R)
+      print(S)
+      print(CV)
+      
+      initial_state <- c(S=S, I=S/50, R=0)
+      paramsC = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
+      paramsS = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/(500-R))
+      paramsA = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
+      paramsG = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
+
+      mclapply(1:1000,
+               function(i) SIRvarC(paramsC, initial_state),
+               mc.cores=10) -> outC
+      
+      mclapply(1:1000,
+               function(i) SIRvarS(paramsS, initial_state),
+               mc.cores=10) -> outS
+      
+      mclapply(1:1000,
+               function(i) SIRvarA(paramsA, initial_state),
+               mc.cores=10) -> outA
+      
+      mclapply(1:1000,
+               function(i) SIRvarG(paramsG, initial_state),
+               mc.cores=10) -> outG
+      
+      lapply(outC, 
+             function(o)
+               data.frame(peak=max(o[[2]][,2]),
+                          totalI=sum(o[[3]][,3]),
+                          tEnd=tail(o[[1]],1),
+                          disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                      NA, 
+                                      glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta))
+      ) %>% 
+        do.call("rbind.data.frame",.) %>%
+        mutate(rep=1:1000, 
+               R0=R,
+               S=S,
+               CV=CV,
+               var='c') -> outSummaryC
+      saveRDS(outSummaryC, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_var=c.RDS"))
+      
+      lapply(outS, 
+             function(o)
+               data.frame(peak=max(o[[2]][,2]),
+                          totalI=sum(o[[3]][,3]),
+                          tEnd=tail(o[[1]],1),
+                          disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                      NA, 
+                                      glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta))
+      ) %>% 
+        do.call("rbind.data.frame",.) %>%
+        mutate(rep=1:1000, 
+               R0=R,
+               S=S,
+               CV=CV,
+               var='s') -> outSummaryS
+      saveRDS(outSummaryS, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_var=s.RDS"))
+      
+      lapply(outA, 
+             function(o)
+               data.frame(peak=max(o[[2]][,2]),
+                          totalI=sum(o[[3]][,3]),
+                          tEnd=tail(o[[1]],1),
+                          disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                      NA, 
+                                      glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta))
+      ) %>% 
+        do.call("rbind.data.frame",.) %>%
+        mutate(rep=1:1000, 
+               R0=R,
+               S=S,
+               CV=CV,
+               var='a') -> outSummaryA
+      saveRDS(outSummaryA, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_var=a.RDS"))
+      
+      lapply(outG, 
+             function(o)
+               data.frame(peak=max(o[[2]][,2]),
+                          totalI=sum(o[[3]][,3]),
+                          tEnd=tail(o[[1]],1),
+                          disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1), silent=TRUE),"try-error"), 
+                                      NA, 
+                                      glm.nb((o[[3]][is.na(o[[3]][,4]),3])~1)$theta))
+      ) %>% 
+        do.call("rbind.data.frame",.) %>%
+        mutate(rep=1:1000, 
+               R0=R,
+               S=S,
+               CV=CV,
+               var='g') -> outSummaryG
+      saveRDS(outSummaryG, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_var=g.RDS"))
     }
   }
 }
+      
+    
 
 
 # 
