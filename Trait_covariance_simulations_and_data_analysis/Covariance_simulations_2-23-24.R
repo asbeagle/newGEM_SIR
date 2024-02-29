@@ -11,7 +11,7 @@ sourceCpp("SIRcov2.cpp")
 # var2=c('s','a','g','a','g','g')
 # 
 # for (R in c(1,2,4,8)) {
-#   for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
+#   for (S in c(100, 250, 500, 1000)) { ## vary initial number of susceptibles
 #     for (CV in c(.2, 1, 5)) {
 #       for (corr in seq(-0.9, 0.9, 0.1)) {
 #         for (parcomb in seq(1,6)) {
@@ -84,46 +84,49 @@ sourceCpp("SIRcov2.cpp")
 #   }
 # }
 # 
-# for (R in c(1,2,4,8)) {
-#   for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
-#     print(R)
-#     print(S)
-#     initial_state <- c(S=S, I=S/50, R=0)
-#     params = c(c=R/500, s=R/(500-R), a=R/500, g=R/500)
-#     mclapply(1:1000,
-#              function(i) SIRnovar(params, initial_state),
-#              mc.cores=10) -> out
-#     
-#     lapply(out, 
-#            function(o)
-#              data.frame(peak=max(o[[2]][,2]),
-#                         totalI=sum(o[[3]][,2]),
-#                         tEnd=tail(o[[1]],1),
-#                         disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1), silent=TRUE),"try-error"), 
-#                                     NA, 
-#                                     glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1)$theta))
-#     ) %>% 
-#       do.call("rbind.data.frame",.) %>%
-#       mutate(rep=1:1000, 
-#              R0=R,
-#              S=S) -> outSummary
-#     
-#     saveRDS(outSummary, file=paste0("out_R0=",R,"_S=",S,"_no_variation.RDS"))
-#   }
-# }
-#     
+
 for (R in c(1,2,4,8)) {
-  for (S in c(100, 250, 500, 1000)) { ## vary iniital number of susceptibles
+  for (S in c(100, 250, 500, 1000)) { ## vary initial number of susceptibles
+    print(R)
+    print(S)
+    initial_state <- c(S=S, I=S/50, R=0)
+    params = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S)
+    mclapply(1:1000,
+             function(i) SIRnovar(params, initial_state),
+             mc.cores=10) -> out
+
+    lapply(out,
+           function(o)
+             data.frame(peak=max(o[[2]][,2]),
+                        totalI=sum(o[[3]][,2]),
+                        tEnd=tail(o[[1]],1),
+                        disp=ifelse(inherits(try(glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1), silent=TRUE),"try-error"),
+                                    NA,
+                                    glm.nb((o[[3]][is.na(o[[3]][,3]),2])~1)$theta))
+    ) %>%
+      do.call("rbind.data.frame",.) %>%
+      mutate(rep=1:1000,
+             R0=R,
+             S=S) -> outSummary
+
+    saveRDS(outSummary, file=paste0("out_R0=",R,"_S=",S,"_no_variation.RDS"))
+    rm(out) ## prevents accidentally saving the same thing twice and saves some storage space
+    rm(outSummary)
+  }
+}
+
+for (R in c(1,2,4,8)) {
+  for (S in c(100, 250, 500, 1000)) { ## vary initial number of susceptibles
     for (CV in c(.2, 1, 5)) {
       print(R)
       print(S)
       print(CV)
       
       initial_state <- c(S=S, I=S/50, R=0)
-      paramsC = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
-      paramsS = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/(500-R))
-      paramsA = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
-      paramsG = c(c=R/500, s=R/(500-R), a=R/500, g=R/500, SD=CV*R/500)
+      paramsC = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S, SD=CV*2*R/S)
+      paramsS = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S, SD=CV*2*R/(S-2*R))
+      paramsA = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S, SD=CV*2*R/S)
+      paramsG = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S, SD=CV*2*R/S)
 
       mclapply(1:1000,
                function(i) SIRvarC(paramsC, initial_state),
@@ -208,6 +211,15 @@ for (R in c(1,2,4,8)) {
                CV=CV,
                var='g') -> outSummaryG
       saveRDS(outSummaryG, file=paste0("out_R0=",R,"_S=",S,"_CV=",CV,"_var=g.RDS"))
+      
+      rm(outC) ## prevents accidentally saving the same thing twice and saves some storage space
+      rm(outSummaryC)
+      rm(outS) ## prevents accidentally saving the same thing twice and saves some storage space
+      rm(outSummaryS)
+      rm(outA) ## prevents accidentally saving the same thing twice and saves some storage space
+      rm(outSummaryA)
+      rm(outG) ## prevents accidentally saving the same thing twice and saves some storage space
+      rm(outSummaryG)
     }
   }
 }
