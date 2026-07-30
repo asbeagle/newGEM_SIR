@@ -1,10 +1,12 @@
 ## Stochastic run in Rcpp
-sourceCpp("SIRcov.cpp")
 library(deSolve) 
 library(MASS)
 library(tidyverse)
 library(ggplot2)
 library(magrittr)
+
+sourceCpp("SIRcov.cpp")
+
 
 ## Compute the deterministic expectation for peak size for different parameter sets
 SIRdet <- function(t, y, params) {

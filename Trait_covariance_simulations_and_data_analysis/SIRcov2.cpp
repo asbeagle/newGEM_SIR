@@ -77,7 +77,7 @@ List SIRcovCS(NumericVector params, IntegerVector x) {
   Popn(0,2) = R; 
   
   // store initial individuals
-  // column 0: ID; column 1: c value; column 2: s value; column 3: no. of 2 infections; column 4: alive or not? (alive = 0; not alive=Inf)
+  // column 0: ID; column 1: c value; column 2: s value; column 3: no. of 2ndary infections; column 4: alive or not? (alive = 0; not alive=Inf)
   for(int i=0; i<100000; i++) {
     storage(i,4) = NA_REAL;
   }

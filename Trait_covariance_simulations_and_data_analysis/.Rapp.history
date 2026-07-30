@@ -1,0 +1,1 @@
+load("/Users/claycressler/newGEM_SIR/Trait_covariance_simulations_and_data_analysis/out_R0=8_S=1000_CV=5_var=g.RDS")

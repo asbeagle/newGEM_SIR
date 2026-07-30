@@ -173,3 +173,35 @@ gillespie.SIR.cov_storage <- function(tmax, params, corr, x, covParams, seed=flo
 }
 
 
+x <- 0.24647
+hivar = c(   c=(1-x)*0.1,    shed=(1-x)*1/9,    alpha=(1+x)*0.1,    gamma=(1+x)*0.1, 
+             sd_c=(1-x)*0.5, sd_shed=(1-x)*5/9, sd_alpha=(1+x)*0.5, sd_gamma=(1+x)*0.5, 
+             b=2.5, d=.1, bs=.01)
+initial_state <- floor(c(S=unname(((hivar["b"]-hivar["d"])/hivar["bs"]))-5, I=5, R=0))
+tmax <- 100
+
+out = gillespie.SIR.cov_storage(tmax, hivar, 0.5, initial_state, c("c","alpha"))
+  
+plot.ts(out[[1]][,3], col="blue", lwd=2, ylab="No. infected")
+
+
+fit = fitdistr(out[[2]]$numInf, "negative binomial")
+X = seq(0, max(out[[2]]$numInf, 0.1))
+Y = dnbinom(X, size=fit$estimate["size"],mu=fit$estimate["mu"]) * nrow(out[[2]])
+
+hist(out[[2]]$numInf, breaks=seq(0,max(out[[2]]$numInf)), main="", xlab="No. secondary infections")
+lines(X, Y, col="red", lwd=2)
+
+glm.nb(out[[2]]$numInf~1)$theta
+
+mclapply(1:50, 
+         function(x) gillespie.SIR.cov_storage(tmax, hivar, 0.5, initial_state, c("c","alpha")), 
+         mc.cores=10) -> reps
+plot.ts(reps[[1]][[1]][,3], col="darkgray", lwd=1, ylab="No. infected", ylim=c(0,175))
+for (i in 2:50) lines(reps[[i]][[1]][,1], reps[[i]][[1]][,3], col="darkgray")
+
+plot(1:175, sapply(1:175, function(i) sum(sapply(reps, function(j) any(j[[1]][,3] >= i)))/50), type='l', lwd=2, xlab='Epidemic size', ylab='% of simulations')
+
+ks = sapply(reps, function(i) ifelse(max(i[[1]][,3])>50, fitdistr(i[[2]]$numInf, "negative binomial")$estimate["size"], NA))
+
+hist(rep(ks,2), main="", xlab="Dispersion parameter")
