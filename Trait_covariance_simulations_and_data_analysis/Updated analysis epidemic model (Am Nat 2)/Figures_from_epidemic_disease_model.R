@@ -253,9 +253,194 @@ for (i in 1:6) {
   dev.off()
 }  
 
+## Epidemic sizes
+list(
+  filter(out, var=="c") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Shedding/Contact",
+           varName="Contact Variation"),
+  filter(out, var=="s") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Shedding/Contact",
+           varName="Shedding Variation"),
+  filter(out, var=="s") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Shedding/Mortality",
+           varName="Shedding Variation"),
+  filter(out, var=="a") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Shedding/Mortality",
+           varName="Mortality Variation"),
+  filter(out, var=="a") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Recovery/Mortality",
+           varName="Mortality Variation"),
+  filter(out, var=="g") %>% 
+    group_by(CV, R0) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    merge(., data.frame(corr=seq(-0.9,0.9,0.1))) %>% 
+    mutate(., 
+           covName="Recovery/Mortality",
+           varName="Recovery Variation")) %>% 
+  do.call("rbind.data.frame",.) -> df1
+
+list(
+  filter(out2, cov=="a-g") %>% 
+    group_by(CV, R0, corr) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    mutate(.,
+           covName="Recovery/Mortality",
+           varName="Trait Covariation"),
+  filter(out2, cov=="c-s") %>% 
+    group_by(CV, R0, corr) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    mutate(.,
+           covName="Shedding/Contact",
+           varName="Trait Covariation"),
+  filter(out2, cov=="s-a") %>% 
+    group_by(CV, R0, corr) %>% 
+    summarize(medianPeak=median(peak), 
+              minPeak=quantile(peak,0.25), 
+              maxPeak=quantile(peak,0.75),
+              medianTop20=median(top20[peak>=50]),
+              minTop20=quantile(top20[peak>=50],0.25),
+              maxTop20=quantile(top20[peak>=50],0.75),
+              medianDisp=median(disp[peak>=50]),
+              minDisp=quantile(disp[peak>=50],0.25),
+              maxDisp=quantile(disp[peak>=50],0.75),
+              fadeoutProb=sum(peak<50)/1000) %>% 
+    mutate(.,
+           covName="Shedding/Mortality",
+           varName="Trait Covariation")
+) %>% do.call("rbind.data.frame", .) -> df2
+
+combo = rbind(df1[colnames(df2)], df2)
+combo$covName = factor(combo$covName, levels=c("Shedding/Contact", "Recovery/Mortality", "Shedding/Mortality"))
+  
+png(file="Fig1_peak_prevalence_R0=1.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==1") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
+
+png(file="Fig2_superspreading_R0=1.png", height=8, width=6, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==1") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+
+
 filter(out2, CV=="CV==1", totalI > 500, cov%in%c("a-g", "c-s", "s-a")) %>% 
   ggplot(., aes(x=disp, y=top20, color=corr)) + 
-  geom_point() + 
+  geom_point(alpha=0.1, shape=".") + 
   facet_grid(cov~R0, labeller=label_parsed) + 
   xlab("Dispersion parameter (k)") + 
   ylab("Proportion of transmission due to\nmost infectious 20% of cases") + 
@@ -263,7 +448,7 @@ filter(out2, CV=="CV==1", totalI > 500, cov%in%c("a-g", "c-s", "s-a")) %>%
 
 filter(out2, R0=="R[0]==4", totalI > 500, cov%in%c("a-g", "c-s", "s-a")) %>% 
   ggplot(., aes(x=disp, y=top20, color=corr)) + 
-  geom_point() + 
+  geom_point(alpha=0.1, shape=".") + 
   facet_grid(cov~CV, labeller=label_parsed) + 
   xlab("Dispersion parameter (k)") + 
   ylab("Proportion of transmission due to\nmost infectious 20% of cases") + 
