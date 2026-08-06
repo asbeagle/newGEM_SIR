@@ -1,3 +1,7 @@
+library(tidyverse)
+library(ggplot2)
+library(magrittr)
+
 out = list()
 i = 1
 for (pmtr in c("c","s","a","g")) {
@@ -418,7 +422,7 @@ combo %>%
   guides(color = guide_legend(nrow=2))
 dev.off()
 
-png(file="Fig2_superspreading_R0=1.png", height=8, width=6, units='in', res=450)
+png(file="Fig2_superspreading_R0=1.png", height=6, width=5.5, units='in', res=450)
 combo %>% 
   filter(., R0=="R[0]==1") %>%
   ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
@@ -436,21 +440,176 @@ combo %>%
          linetype = guide_legend(nrow=1))
 dev.off()
 
+png(file="Fig3_peak_prevalence_R0=2.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==2") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
 
+png(file="Fig3_peak_prevalence_R0=4.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==4") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
 
-filter(out2, CV=="CV==1", totalI > 500, cov%in%c("a-g", "c-s", "s-a")) %>% 
-  ggplot(., aes(x=disp, y=top20, color=corr)) + 
-  geom_point(alpha=0.1, shape=".") + 
-  facet_grid(cov~R0, labeller=label_parsed) + 
-  xlab("Dispersion parameter (k)") + 
-  ylab("Proportion of transmission due to\nmost infectious 20% of cases") + 
-  theme_bw()
+png(file="Fig3_peak_prevalence_R0=8.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==8") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
 
-filter(out2, R0=="R[0]==4", totalI > 500, cov%in%c("a-g", "c-s", "s-a")) %>% 
-  ggplot(., aes(x=disp, y=top20, color=corr)) + 
-  geom_point(alpha=0.1, shape=".") + 
-  facet_grid(cov~CV, labeller=label_parsed) + 
-  xlab("Dispersion parameter (k)") + 
-  ylab("Proportion of transmission due to\nmost infectious 20% of cases") + 
-  theme_bw()
+png(file="Fig3_peak_prevalence_CV=1.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., CV=="CV==1") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~R0, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
+
+png(file="Fig3_peak_prevalence_CV=5.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., CV=="CV==5") %>%
+  ggplot(., aes(x=corr, y=medianPeak/1000, color=varName)) +
+  geom_line() + 
+  geom_ribbon(aes(ymin=minPeak/1000, ymax=maxPeak/1000, fill=varName), linetype="blank", alpha=0.2) + 
+  facet_grid(covName~R0, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Peak Prevalence") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  guides(color = guide_legend(nrow=2))
+dev.off()
+
+png(file="Fig4_superspreading_R0=4.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==4") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+png(file="Fig4_superspreading_R0=2.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==2") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+png(file="Fig4_superspreading_R0=8.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., R0=="R[0]==8") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~CV, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+png(file="Fig4_superspreading_CV=1.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., CV=="CV==1") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~R0, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+png(file="Fig4_superspreading_CV=5.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  filter(., CV=="CV==5") %>%
+  ggplot(., aes(x=corr, y=medianTop20, color=varName)) +
+  geom_line(aes(linetype="Transmission From Top 20% of Cases")) + 
+  geom_ribbon(aes(ymin=minTop20, ymax=maxTop20, fill=varName), alpha=0.2, linetype='blank') + 
+  geom_line(aes(x=corr, y=fadeoutProb, color=varName, linetype="Epidemic Fadeout")) + 
+  scale_linetype_manual(values = c("Transmission From Top 20% of Cases" = 1,
+                                   "Epidemic Fadeout" = 2)) + 
+  facet_grid(covName~R0, labeller=label_parsed) + 
+  xlab("Trait Correlation") + 
+  ylab("Proportion") + 
+  theme_bw() + 
+  theme(legend.position="bottom", legend.title=element_blank(), legend.box="vertical") + 
+  guides(color = guide_legend(nrow=2), 
+         linetype = guide_legend(nrow=1))
+dev.off()
+
+png(file="Fig5_superspreading_metrics.png", height=6, width=5.5, units='in', res=450)
+combo %>% 
+  ggplot(., aes(x=medianDisp, y=medianTop20, color=corr, shape=CV)) + 
+  geom_point(size=2) + 
+  scale_color_gradient2(low="#2166AC", mid="gray75", high="#B2182B", midpoint=0) + 
+  facet_grid(covName~.) + 
+  xlab("Dispersion parameter") + 
+  ylab("Proportion of transmission from\ntop 20% most infectious cases") + 
+  theme_bw() + 
+  theme(legend.title=element_blank()) 
+dev.off()  
+
 

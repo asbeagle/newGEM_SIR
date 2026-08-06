@@ -496,5 +496,86 @@ for (R in c(1,2,4,8)) {
   }
 }
 
+## Initial number of susceptible hosts
+S = 1000
+## Expected R0
+R = 4
+## Magnitude of variation
+CV = 1
+## Trait correlation
+corr = -0.5
+## Covarying traits
+var1 = "s"
+var2 = "a"
+## Set parameters and initial conditions
+params = c(c=2*R/S, s=2*R/(S-2*R), a=2*R/S, g=2*R/S,
+           SD1=CV*2*R/(S-2*R), SD2=CV*2*R/S, corr=corr)
+initial_state <- c(S=S, I=S/100, R=0)
+## Simulate the stochastic epidemic model
+out = SIRcovSA(params, initial_state)
 
 
+prev = out[[2]] %>% apply(., 1, function(x) x[2]/sum(x))
+
+png("Conceptual_figure_panel_1.png", height=5, width=5, units='in', res=450)
+plot(out[[1]], prev, type='l', xlab="Time", ylab="Infection prevalence")
+arrows(x0=(out[[1]][which(prev==max(prev))]+100), 
+       x1=out[[1]][which(prev==max(prev))], 
+       y0=max(prev), 
+       y1=max(prev), 
+       length=0.1, col="red")
+text(x=(out[[1]][which(prev==max(prev))]+110), 
+     y=max(prev), 
+     "Peak prevalence = 0.55", 
+     adj=0, col="red")
+arrows(x0=max(out[[1]]), 
+       x1=max(out[[1]]), 
+       y0=0.08, 
+       y1=-0.02, 
+       length=0.1, col="red")
+text(x=max(out[[1]]), 
+     y=0.11, 
+     "Epidemic\nduration = 813", 
+     adj=1, col="red")
+dev.off()
+
+## Fit negative binomial distribution to observed no of secondary case counts
+count = out[[3]][,4]
+fit <- glm.nb(count ~ 1)
+mu_val <- unname(exp(coef(fit)[1]))
+theta_val <- fit$theta
+n_obs <- length(count)
+bw <- 1 
+
+x_vals <- seq(min(count), max(count), by = 1)
+fitted_df <- data.frame(
+  count = x_vals,
+  pred = n_obs * bw * dnbinom(x_vals, size = theta_val, mu = mu_val)
+)
+
+df = data.frame(count=count)
+png(file="Conceptual_figure_panel_2.png", height=5, width=5, units='in', res=450)
+plot.new()
+plot.window(xlim=c(-0.5,19.5), ylim=c(0,600))
+axis(1)
+axis(2)
+box('plot')
+rect(xleft=seq(-0.5,18.5,1), 
+     ybottom=rep(0,20), 
+     xright=seq(0.5,19.5,1), 
+     ytop=sapply(seq(0,max(count)), function(n) sum(count==n)),
+     col="gray75")
+mtext(side=1, "No. of secondary cases caused", line=3)
+mtext(side=2, "Frequency", line=3)
+lines(fitted_df$count, fitted_df$pred, col="red", lwd=1.5)
+points(fitted_df$count, fitted_df$pred, col="red", pch=21, bg="red")
+text(x=2, y=590, "Dispersion estimate = 0.45", col="red", adj=0)
+dev.off()
+
+png(file="Conceptual_figure_panel_3.png", height=5, width=5, units='in', res=450)
+plot(seq(1,length(count))/length(count), cumsum(sort(count, decreasing=TRUE))/max(cumsum(count)), 
+     type='l', xlab="Infectiousness (ranked percentile of cases)", ylab="Proportion of total transmission")
+lines(x=c(0.2,0.2), y=c(0,0.771), col=2)
+arrows(x0=0.2, x1=-0.035, y0=0.771, y1=0.771, length=0.1, col="red")
+text(0.22, 0.771, "Proportion of transmission from\ntop 20% most infectious cases = 0.77", col="red", adj=0)
+dev.off()
